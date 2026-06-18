@@ -1,0 +1,1557 @@
+/* src/styles/theme.css */
+
+:root {
+  --primary: #9bd44e;
+  --bg: #f5f5f5;
+  --border: #ececec;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Pretendard", sans-serif;
+}
+
+body {
+  background: var(--bg);
+}
+
+.app-container {
+  max-width: 430px;
+  min-height: 100vh;
+
+  margin: 0 auto;
+
+  background: white;
+
+  position: relative;
+}
+
+.page {
+  padding: 20px;
+  padding-bottom: 120px;
+}
+/* 시작 화면 */
+
+.splash-page {
+  height: 100vh;
+
+  display: flex;
+  flex-direction: column;
+
+  justify-content: space-between;
+
+  padding: 80px 30px;
+
+  background:
+    linear-gradient(
+      to bottom,
+      #f8fbef,
+      white
+    );
+}
+
+.splash-logo {
+  font-size: 48px;
+  font-weight: 900;
+
+  margin-top: 120px;
+
+  color: #222;
+}
+
+.splash-sub {
+  margin-top: 14px;
+
+  color: #777;
+
+  font-size: 16px;
+}
+
+.start-btn {
+  width: 100%;
+  height: 58px;
+
+  border: none;
+
+  border-radius: 20px;
+
+  background: #9bd44e;
+
+  color: white;
+
+  font-size: 17px;
+  font-weight: 800;
+}
+
+/* 로그인 회원가입 */
+
+.auth-page {
+  padding: 30px;
+
+  padding-top: 90px;
+}
+
+.auth-title {
+  font-size: 32px;
+  font-weight: 800;
+
+  margin-top: 50px;
+  margin-bottom: 34px;
+}
+
+.auth-input {
+  width: 100%;
+  height: 56px;
+
+  border: 1px solid #ececec;
+
+  border-radius: 18px;
+
+  padding: 0 18px;
+
+  margin-bottom: 14px;
+
+  outline: none;
+
+  font-size: 15px;
+}
+
+.auth-btn {
+  width: 100%;
+  height: 58px;
+
+  margin-top: 10px;
+
+  border: none;
+
+  border-radius: 18px;
+
+  background: #9bd44e;
+
+  color: white;
+
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.auth-bottom {
+  margin-top: 24px;
+
+  text-align: center;
+
+  color: #888;
+
+  font-size: 14px;
+}
+
+.auth-bottom span {
+  color: #6d8f33;
+
+  font-weight: 700;
+
+  margin-left: 8px;
+
+  cursor: pointer;
+}
+/* 상단 */
+
+.top-bar,
+.profile-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  margin-bottom: 24px;
+}
+
+.logo {
+  font-size: 25px;
+  font-weight: 900;
+
+  letter-spacing: -0.5px;
+}
+
+.icon-group {
+  display: flex;
+  align-items: center;
+
+  gap: 16px;
+
+  font-size: 22px;
+
+  color: #444;
+}
+
+.bell-wrap {
+  position: relative;
+}
+
+.bell-dot {
+  width: 8px;
+  height: 8px;
+
+  background: #9bd44e;
+
+  border-radius: 50%;
+
+  position: absolute;
+
+  top: 2px;
+  right: 1px;
+}
+
+/* 슬라이드 */
+
+.book-swiper {
+  margin-bottom: 26px;
+}
+
+.hero-card {
+  background: #c9eb7f;
+
+  border-radius: 30px;
+
+  padding: 18px;
+}
+
+.hero-image {
+  width: 100%;
+  height: 240px;
+
+  object-fit: cover;
+
+  border-radius: 24px;
+}
+
+.hero-title {
+  margin-top: 18px;
+
+  font-size: 22px;
+  font-weight: 800;
+
+  color: #222;
+}
+
+.hero-sub {
+  margin-top: 6px;
+
+  color: #777;
+
+  font-size: 14px;
+}
+
+/* 카드 */
+
+.group-card {
+  background: white;
+
+  border-radius: 24px;
+
+  padding: 18px;
+
+  margin-bottom: 16px;
+
+  border: 1px solid #efefef;
+
+  box-shadow:
+    0 4px 12px rgba(0,0,0,0.04);
+}
+
+.group-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.group-title {
+  font-size: 17px;
+  font-weight: 700;
+
+  margin-bottom: 8px;
+
+  color: #222;
+}
+
+.group-info {
+  color: #888;
+  font-size: 14px;
+}
+
+.line {
+  width: 100%;
+  height: 1px;
+
+  background: #f1f1f1;
+
+  margin: 14px 0;
+}
+
+.group-footer {
+  margin-top: px;
+
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  color: #777;
+  font-size: 14px;
+}
+
+.group-footer span {
+  margin-right: 16px;
+}
+/* 뱃지 */
+
+.badge-wrap {
+  display: flex;
+  flex-direction: column;
+
+  gap: 8px;
+
+  align-items: flex-end;
+}
+
+.badge,
+.badge1,
+.badge2,
+.badge3 {
+  padding: 5px 12px;
+
+  border-radius: 999px;
+
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.badge {
+  background: #9bd44e;
+  color: white;
+}
+
+.badge1 {
+  background: #eef7da;
+  color: #6a8c2f;
+}
+
+.badge2 {
+  background: #f7efd6;
+  color: #b0893e;
+}
+
+.badge3 {
+  background: #e7f79e;
+  color: #7a8450;
+}
+
+/* 프로필 */
+
+.profile-top {
+  display: flex;
+  gap: 18px;
+
+  align-items: center;
+
+  margin-bottom: 20px;
+}
+
+
+
+.follow-wrap {
+  display: flex;
+  gap: 28px;
+}
+
+.follow-num {
+  font-size: 15px;
+  font-weight: 800;
+
+  margin-bottom: 4px;
+}
+
+.follow-text {
+  font-size: 13px;
+  color: #777;
+}
+
+.profile-desc {
+  color: #605f5f;
+  margin-bottom: 20px;
+}
+
+
+/* 책장 */
+/* ===================== */
+
+/* ===================== */
+/* 책장 */
+/* ===================== */
+
+.books-section {
+  position: fixed;
+  bottom: 72px; /* 네비바 높이 */
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 430px;
+  background: white;
+  padding: 12px 20px 0;
+  z-index: 50;
+}
+
+.bookshelf-scroll {
+  width: 100%;
+
+  display: flex;
+
+  align-items: flex-end;
+
+  gap: 12px;
+
+  overflow-x: auto;
+  overflow-y: hidden;
+
+  padding: 20px 10px 16px;
+
+  white-space: nowrap;
+}
+
+.bookshelf-scroll::-webkit-scrollbar {
+  height: 6px;
+}
+
+.bookshelf-scroll::-webkit-scrollbar-thumb {
+  background: #d6d6d6;
+  border-radius: 999px;
+}
+
+/* 책 한 권 */
+
+.vertical-book {
+  flex-shrink: 0;
+}
+
+/* 책등 */
+
+.book-spine {
+  width: 48px;
+
+  height: 180px;
+
+  background: #95cc47;
+
+  border-radius: 10px 10px 0 0;
+
+  display: flex;
+
+  justify-content: center;
+  align-items: center;
+
+  color: rgba(246, 242, 242, 0.28);
+
+  font-size: 12px;
+  font-weight: 700;
+
+  cursor: pointer;
+
+  box-shadow:
+    0 3px 8px rgba(0,0,0,0.06);
+
+  writing-mode: vertical-rl;
+
+  text-orientation: mixed;
+}
+
+.vertical-book:nth-child(even) .book-spine {
+  background: #dff2b8;
+}
+
+/* 책 높이 랜덤 느낌 */
+
+.vertical-book:nth-child(3n) .book-spine {
+  height: 210px;
+}
+
+.vertical-book:nth-child(4n) .book-spine {
+  height: 165px;
+}
+
+.vertical-book:nth-child(5n) .book-spine {
+  height: 195px;
+}
+/* 하단 네비 */
+
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+
+  width: 100%;
+  max-width: 430px;
+
+  height: 72px;
+
+  background: rgba(255,255,255,0.96);
+
+  backdrop-filter: blur(10px);
+
+  border-top: 1px solid var(--border);
+
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+
+  font-size: 24px;
+}
+
+.bottom-nav svg {
+  color: #888;
+}
+
+.active-nav {
+  color: #9bd44e !important;
+}
+/* ========================= */
+/* AI 독후감 */
+/* ========================= */
+
+
+.write-top {
+  margin-bottom: 28px;
+}
+
+.write-title {
+  font-size: 23px;
+  font-weight: 800;
+
+  margin-bottom: 8px;
+}
+
+.write-sub {
+  color: #777;
+  font-size: 14px;
+}
+
+.write-card {
+  background: white;
+
+  border-radius: 24px;
+
+  padding: 18px;
+
+  margin-bottom: 18px;
+
+  border: 1px solid #efefef;
+
+  box-shadow:
+    0 4px 12px rgba(0,0,0,0.04);
+}
+
+.input-label {
+  font-size: 15px;
+  font-weight: 700;
+
+  margin-bottom: 14px;
+}
+
+/* 검색 */
+
+.book-search {
+  width: 100%;
+  height: 52px;
+
+  
+
+  border-radius: 16px;
+
+  display: flex;
+  align-items: center;
+
+  gap: 10px;
+
+  padding: 0 0px;
+
+  color: #999;
+}
+
+.book-search input {
+  border: none;
+  outline: none;
+
+  width: 100%;
+
+  font-size: 14px;
+}
+
+/* 검색 결과 */
+
+.book-result {
+  margin-top: 16px;
+
+  display: flex;
+  align-items: center;
+
+  gap: 14px;
+
+  background: #f8fbef;
+
+  border-radius: 18px;
+
+  padding: 14px;
+}
+
+.book-cover {
+  width: 52px;
+  height: 72px;
+
+  border-radius: 10px;
+
+  background: #b7ea64;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 22px;
+}
+
+.book-name {
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.book-author {
+  font-size: 13px;
+  color: #777;
+}
+
+/* textarea */
+
+.write-textarea {
+  width: 100%;
+  height: 120px;
+
+  border: 1px solid #ececec;
+
+  border-radius: 18px;
+
+  padding: 16px;
+
+  resize: none;
+
+  outline: none;
+
+  line-height: 1.6;
+
+  font-size: 14px;
+}
+
+.big {
+  height: 180px;
+}
+
+/* 사진 버튼 */
+
+.photo-btn {
+  width: 100%;
+  height: 48px;
+
+  margin-top: 14px;
+
+  border: none;
+
+  border-radius: 16px;
+
+  background: #eef7da;
+
+  color: #6d8f33;
+
+  font-size: 14px;
+  font-weight: 700;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 8px;
+
+  cursor: pointer;
+}
+
+/* 생성 버튼 */
+
+.generate-btn {
+  width: 100%;
+  height: 58px;
+
+  border: none;
+
+  border-radius: 20px;
+
+  background: #9bd44e;
+
+  color: white;
+
+  font-size: 16px;
+  font-weight: 800;
+
+  cursor: pointer;
+
+  box-shadow:
+    0 8px 20px rgba(155,212,78,0.28);
+}
+
+/* 결과 */
+
+.result-card {
+  margin-top: 22px;
+
+  background: #f8fbef;
+
+  border: 1px solid #e5efcb;
+
+  border-radius: 24px;
+
+  padding: 18px;
+}
+
+.result-title {
+  font-weight: 800;
+
+  color: #6d8f33;
+
+  margin-bottom: 12px;
+}
+
+.result-content {
+  color: #555;
+
+  line-height: 1.8;
+
+  font-size: 14px;
+}
+/* 검색 결과 */
+
+.search-item {
+  margin-top: 14px;
+
+  display: flex;
+  align-items: center;
+
+  gap: 14px;
+
+  padding: 12px;
+
+  border-radius: 16px;
+
+  cursor: pointer;
+
+  transition: 0.2s;
+
+  background: #fafafa;
+}
+
+.search-item:hover {
+  background: #f2f7e7;
+}
+
+.search-cover {
+  width: 44px;
+  height: 62px;
+
+  border-radius: 10px;
+
+  background: #b7ea64;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+/* 리뷰 페이지 */
+
+.review-hero {
+  display: flex;
+  align-items: center;
+
+  gap: 18px;
+
+  margin-bottom: 30px;
+}
+
+.review-cover {
+  width: 90px;
+  height: 120px;
+
+  border-radius: 20px;
+
+  background: linear-gradient(
+    to bottom right,
+    #b7ea64,
+    #8ccc3f
+  );
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 42px;
+}
+
+.review-book {
+  font-size: 28px;
+  font-weight: 800;
+
+  margin-bottom: 8px;
+}
+
+.review-author {
+  color: #888;
+  font-size: 14px;
+}
+
+.review-card {
+  background: #f8fbef;
+
+  border-radius: 28px;
+
+  padding: 28px;
+
+  line-height: 1.9;
+
+  margin-bottom: 20px;
+
+  box-shadow:
+    0 6px 18px rgba(0,0,0,0.05);
+}
+
+.review-title {
+  font-size: 20px;
+  font-weight: 800;
+
+  margin-bottom: 18px;
+
+  color: #6f9231;
+}
+
+.review-content {
+  color: #555;
+
+  font-size: 15px;
+}
+
+.emotion-card {
+  background: white;
+
+  border-radius: 24px;
+
+  padding: 22px;
+
+  border: 1px solid #ececec;
+}
+
+.emotion-title {
+  font-size: 16px;
+  font-weight: 700;
+
+  margin-bottom: 14px;
+}
+
+.emotion-tags {
+  display: flex;
+  gap: 10px;
+
+  flex-wrap: wrap;
+}
+
+.emotion-tags span {
+  background: #eef7da;
+
+  color: #6d8f33;
+
+  padding: 8px 14px;
+
+  border-radius: 999px;
+
+  font-size: 13px;
+}
+/* 커뮤니티 */
+
+.community-banner {
+  background: #eef7da;
+
+  padding: 18px;
+
+  border-radius: 22px;
+
+  margin-bottom: 24px;
+
+  color: #62812f;
+
+  font-weight: 700;
+
+  line-height: 1.5;
+}
+
+.meeting-card {
+  background: white;
+
+  border-radius: 24px;
+
+  padding: 20px;
+
+  margin-bottom: 18px;
+
+  border: 1px solid #ececec;
+
+  box-shadow:
+    0 4px 12px rgba(0,0,0,0.04);
+}
+
+.meeting-top {
+  display: flex;
+  justify-content: space-between;
+
+  margin-bottom: 20px;
+}
+
+.meeting-title {
+  font-size: 18px;
+  font-weight: 800;
+
+  margin-bottom: 8px;
+}
+
+.meeting-time {
+  color: #888;
+  font-size: 14px;
+}
+
+.meeting-badge {
+  background: #eef7da;
+
+  color: #6f9231;
+
+  padding: 8px 12px;
+
+  border-radius: 999px;
+
+  font-size: 12px;
+
+  height: fit-content;
+}
+.meeting-badge2 {
+  background: #f7efd6; 
+  color: #b0893e;
+
+  padding: 8px 12px;
+
+  border-radius: 999px;
+
+  font-size: 12px;
+
+  height: fit-content;
+}
+.meeting-badge3 {
+  background: #e7f79e; 
+  color: #7a8450;
+
+  padding: 8px 12px;
+
+  border-radius: 999px;
+
+  font-size: 12px;
+
+  height: fit-content;
+}
+
+.meeting-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.join-btn {
+  border: none;
+
+  background: #9bd44e;
+
+  color: white;
+
+  padding: 10px 18px;
+
+  border-radius: 14px;
+
+  font-weight: 700;
+
+  cursor: pointer;
+}
+
+/* 모임방 */
+
+.meeting-room-title {
+  font-size: 24px;
+  font-weight: 800;
+
+  margin-bottom: 18px;
+}
+
+.ai-guide {
+  background: #eef7da;
+
+  color: #62812f;
+
+  padding: 18px;
+
+  border-radius: 20px;
+
+  margin-bottom: 24px;
+
+  line-height: 1.6;
+
+  font-weight: 700;
+}
+
+.meeting-input {
+  position: fixed;
+
+  bottom: 72px;
+
+  width: 100%;
+  max-width: 430px;
+
+  display: flex;
+
+  gap: 10px;
+
+  padding: 14px 20px;
+
+  background: white;
+
+  border-top: 1px solid #ececec;
+}
+
+.meeting-input input {
+  flex: 1;
+
+  border: 1px solid #ececec;
+
+  border-radius: 999px;
+
+  padding: 14px;
+
+  outline: none;
+}
+
+.meeting-input button {
+  border: none;
+
+  background: #9bd44e;
+
+  color: white;
+
+  border-radius: 999px;
+
+  padding: 0 18px;
+
+  font-weight: 700;
+}
+/* 채팅방 */
+
+/* theme.css 맨 아래 추가 */
+
+/* 채팅방 */
+
+.meeting-page {
+  height: 100vh;
+
+  background: #f7f7f7;
+
+  display: flex;
+  flex-direction: column;
+
+  overflow: hidden;
+}
+
+/* 상단 */
+
+.meeting-header {
+  height: 74px;
+
+  background: white;
+
+  display: flex;
+  align-items: center;
+
+  padding: 0 20px;
+
+  border-bottom: 1px solid #ececec;
+
+  font-weight: 800;
+
+  flex-shrink: 0;
+}
+
+.meeting-room-name {
+  font-size: 18px;
+}
+
+/* 채팅 영역 */
+
+.meeting-chat-area {
+  flex: 1;
+
+  overflow-y: auto;
+
+  padding: 20px;
+
+  padding-bottom: 160px;
+
+  display: flex;
+  flex-direction: column;
+
+  gap: 18px;
+
+  min-height: 0;
+}
+
+/* 채팅 줄 */
+
+.chat-row {
+  display: flex;
+
+  align-items: flex-end;
+
+  gap: 10px;
+}
+
+.chat-row.right {
+  justify-content: flex-end;
+}
+
+/* 프로필 */
+
+.chat-profile {
+  width: 38px;
+  height: 38px;
+
+  border-radius: 50%;
+
+  color: white;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 13px;
+  font-weight: 700;
+
+  flex-shrink: 0;
+}
+
+/* 이름 */
+
+.chat-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.chat-name {
+  font-size: 12px;
+
+  color: #777;
+
+  margin-bottom: 6px;
+
+  margin-left: 4px;
+}
+
+/* 말풍선 */
+
+.chat-bubble {
+  padding: 14px 16px;
+
+  border-radius: 20px;
+
+  line-height: 1.6;
+
+  font-size: 14px;
+
+  white-space: pre-line;
+
+  word-break: keep-all;
+
+  width: fit-content;
+
+  max-width: 280px;
+}
+
+/* AI */
+
+.ai-chat {
+  background: #eef7da;
+
+  color: #486125;
+
+  border-top-left-radius: 6px;
+}
+
+/* 다른 사람 */
+
+.other-chat {
+  background: white;
+
+  color: #333;
+
+  border-top-left-radius: 6px;
+
+  box-shadow:
+    0 2px 8px rgba(0,0,0,0.05);
+}
+
+/* 내 채팅 */
+
+.user-chat {
+  background: #9bd44e;
+
+  color: white;
+
+  border-bottom-right-radius: 6px;
+
+  margin-left: auto;
+
+  width: fit-content;
+
+  max-width: 280px;
+}
+
+/* 입력창 */
+
+.meeting-input-wrap {
+  position: fixed;
+
+  bottom: 72px;
+
+  width: 100%;
+  max-width: 430px;
+
+  display: flex;
+  align-items: center;
+
+  gap: 10px;
+
+  padding: 14px 16px;
+
+  background: white;
+
+  border-top: 1px solid #ececec;
+
+  z-index: 100;
+}
+
+.meeting-input-wrap input {
+  flex: 1;
+
+  height: 46px;
+
+  border: none;
+
+  background: #f1f1f1;
+
+  border-radius: 999px;
+
+  padding: 0 18px;
+
+  outline: none;
+
+  font-size: 14px;
+}
+
+.meeting-input-wrap button {
+  border: none;
+
+  height: 46px;
+
+  padding: 0 18px;
+
+  border-radius: 999px;
+
+  background: #9bd44e;
+
+  color: white;
+
+  font-weight: 700;
+
+  cursor: pointer;
+}
+/* theme.css 추가 */
+
+.add-meeting-btn {
+  border: none;
+  background: #9bd44e;
+  color: white;
+  padding: 10px 14px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.community-guide {
+  background: #f6f8ef;
+  padding: 14px;
+  border-radius: 16px;
+  margin-bottom: 20px;
+  color: #666;
+  font-size: 14px;
+}
+
+.join-btn {
+  border: none;
+  background: #9bd44e;
+  color: white;
+  padding: 10px 16px;
+  border-radius: 12px;
+  font-weight: 700;
+}
+
+.start-badge {
+  background: #ececec;
+  color: #666;
+  padding: 5px 12px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+/* 모달 */
+
+.meeting-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.3);
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  z-index: 999;
+}
+
+.meeting-modal-box {
+  width: 90%;
+  max-width: 340px;
+
+  max-height: 80vh;
+
+  overflow-y: auto;
+
+  background: white;
+
+  border-radius: 20px;
+
+  padding: 20px;
+}
+
+.modal-title {
+  font-size: 22px;
+  font-weight: 800;
+  margin-bottom: 10px;
+}
+
+.meeting-modal-box input,
+.meeting-modal-box select {
+  border: 1px solid #e4e4e4;
+  border-radius: 14px;
+  padding: 14px;
+  font-size: 14px;
+  outline: none;
+  margin-bottom: 12px;
+}
+
+.modal-btn-wrap {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.cancel-btn {
+  flex: 1;
+  height: 48px;
+  border: none;
+  border-radius: 14px;
+  background: #efefef;
+  font-weight: 700;
+}
+
+.create-btn {
+  flex: 1;
+  height: 48px;
+  border: none;
+  border-radius: 14px;
+  background: #9bd44e;
+  color: white;
+  font-weight: 700;
+}
+.meeting-room-top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.search-result {
+  max-height: 180px;
+  overflow-y: auto;
+  margin-top: -12px;
+}
+/* theme.css 맨 아래 추가 */
+
+.date-time-wrap {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 12px;
+  margin-top: 12px;
+}
+
+.date-time-wrap input {
+  flex: 1;
+}
+
+.people-box {
+  background: #f8f8f8;
+  border-radius: 18px;
+  padding: 16px;
+  margin-bottom: 12px;
+}
+
+.people-label {
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 14px;
+}
+
+.people-control {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 18px;
+}
+
+.people-control button {
+  width: 40px;
+  height: 40px;
+
+  border: none;
+
+  border-radius: 50%;
+
+  background: #9bd44e;
+
+  color: white;
+
+  font-size: 22px;
+  font-weight: 700;
+
+  cursor: pointer;
+}
+
+.people-control span {
+  font-size: 18px;
+  font-weight: 800;
+  color: #333;
+}
+/* theme.css 맨 아래 추가 */
+
+.meeting-book {
+  font-size: 13px;
+  color: #7d7d7d;
+
+  margin-top: 4px;
+  margin-bottom: 6px;
+}
+
+.date-time-wrap {
+  display: flex;
+  gap: 10px;
+}
+
+.date-time-wrap input {
+  flex: 1;
+}
+
+.people-box {
+  background: #f8f8f8;
+  border-radius: 18px;
+  padding: 16px;
+}
+
+.people-label {
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 14px;
+}
+
+.people-control {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 18px;
+}
+
+.people-control button {
+  width: 40px;
+  height: 40px;
+
+  border: none;
+
+  border-radius: 50%;
+
+  background: #9bd44e;
+
+  color: white;
+
+  font-size: 22px;
+  font-weight: 700;
+
+  cursor: pointer;
+}
+
+.people-control span {
+  font-size: 18px;
+  font-weight: 800;
+  color: #333;
+}
+.follow-btn {
+  margin-top: 14px;
+
+  border: none;
+
+  background: #9bd44e;
+
+  color: white;
+
+  padding: 10px 18px;
+
+  border-radius: 14px;
+
+  font-weight: 700;
+}
+
+.following-btn {
+  margin-top: 14px;
+
+  border: none;
+
+  background: #ececec;
+
+  color: #555;
+
+  padding: 10px 18px;
+
+  border-radius: 14px;
+
+  font-weight: 700;
+}
