@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 @Transactional(readOnly = true)
 public class BookclubService {
 
-    private final BookClubRepository bookClubRepository;
+    private final BookclubRepository bookClubRepository;
     private final MemberBookclubRepository memberBookclubRepository;
 
     // 채팅 발송 처리를 위한 Producer (구조 상 chat 패키지에 위치)
