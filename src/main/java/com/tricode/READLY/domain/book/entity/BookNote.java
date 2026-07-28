@@ -1,0 +1,38 @@
+package com.tricode.READLY.domain.book.entity;
+
+import com.tricode.READLY.domain.member.entity.Member;
+import jakarta.persistence.*;
+import lombok.*;
+
+@Entity
+@Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
+@Builder
+public class BookNote {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "note_id")
+    private Long id;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "book_id", nullable = false)
+    private Book name;
+
+    @Column(columnDefinition = "TEXT")
+    private String phrase; // 구절
+
+    @Column(columnDefinition = "TEXT")
+    private String feeling; // 느낀점
+
+    @Column(nullable = false)
+    private boolean isAiGenerated; // AI 생성 여부
+
+    @Column(columnDefinition = "TEXT")
+    private String aiContent; // AI 독서록 내용
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "member_id", nullable = false)
+    private Member member;
+}
