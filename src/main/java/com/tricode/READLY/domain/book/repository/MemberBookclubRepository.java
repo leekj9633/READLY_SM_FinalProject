@@ -14,4 +14,6 @@ public interface MemberBookclubRepository extends JpaRepository<MemberBookclub, 
 
     @Query("select mbc from MemberBookclub mbc join fetch mbc.member where mbc.bookClub.id = :clubId")
     List<MemberBookclub> findAllByBookClubIdWithMember(@Param("clubId") Long clubId);
+
+    int countByBookClubId(Long bookClubId);
 }

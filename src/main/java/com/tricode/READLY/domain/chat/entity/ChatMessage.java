@@ -7,6 +7,7 @@ import org.springframework.data.redis.core.RedisHash;
 import org.springframework.data.redis.core.index.Indexed;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -34,5 +35,5 @@ public class ChatMessage {
     private List<MemberChat> memberChats = new ArrayList<>();
 
     @OneToMany(mappedBy = "chatMessage")
-    private List<ChatBookClub> chatBookClubs = new ArrayList<>();
+    private List<ChatBookclub> chatBookClubs = new ArrayList<>();
 }
