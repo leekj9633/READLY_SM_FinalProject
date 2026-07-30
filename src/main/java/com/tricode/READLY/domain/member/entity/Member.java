@@ -2,7 +2,6 @@ package com.tricode.READLY.domain.member.entity;
 
 import com.tricode.READLY.domain.book.entity.MemberBook;
 import com.tricode.READLY.domain.book.entity.MemberBookClub;
-import com.tricode.READLY.domain.chat.entity.MemberChat;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -43,8 +42,5 @@ public class Member {
 
     @OneToMany(mappedBy = "member")
     private List<MemberBookClub> memberBookClubs = new ArrayList<>();
-
-    @OneToMany(mappedBy = "member")
-    private List<MemberChat> memberChats = new ArrayList<>();
 }
 

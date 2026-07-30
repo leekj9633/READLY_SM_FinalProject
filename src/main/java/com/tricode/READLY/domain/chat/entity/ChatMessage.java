@@ -31,9 +31,4 @@ public class ChatMessage {
 
     private LocalDateTime createdAt;
 
-    @OneToMany(mappedBy = "chatMessage")
-    private List<MemberChat> memberChats = new ArrayList<>();
-
-    @OneToMany(mappedBy = "chatMessage")
-    private List<ChatBookclub> chatBookClubs = new ArrayList<>();
 }

@@ -1,6 +1,5 @@
 package com.tricode.READLY.domain.book.entity;
 
-import com.tricode.READLY.domain.chat.entity.ChatBookclub;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDate;
@@ -50,8 +49,5 @@ public class BookClub {
 
     @OneToMany(mappedBy = "bookClub")
     private List<MemberBookClub> memberBookClubs = new ArrayList<>();
-
-    @OneToMany(mappedBy = "bookClub")
-    private List<ChatBookclub> chatBookClubs = new ArrayList<>();
 
 }
