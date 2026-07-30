@@ -3,9 +3,11 @@ package com.tricode.READLY.domain.member.service;
 import com.tricode.READLY.domain.member.dto.MemberDto;
 import com.tricode.READLY.domain.member.entity.Follow;
 import com.tricode.READLY.domain.member.entity.Member;
+import com.tricode.READLY.domain.member.jwt.JwtTokenProvider;
 import com.tricode.READLY.domain.member.repository.FollowRepository;
 import com.tricode.READLY.domain.member.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,9 +21,11 @@ public class MemberService {
 
     private final MemberRepository memberRepository;
     private final FollowRepository followRepository;
+    private final JwtTokenProvider jwtTokenProvider;
+    private final PasswordEncoder passwordEncoder; // SecurityConfig에서 등록한 BCrypt 빈이 주입
 
     /**
-     * 기능 2: 회원가입
+     * 회원가입
      */
     @Transactional
     public Long signUp(MemberDto.SignUpRequest request) {
@@ -33,29 +37,32 @@ public class MemberService {
         Member member = Member.builder()
                 .name(request.name())
                 .email(request.email())
-                .password(request.password()) // 실제로는 PasswordEncoder로 암호화 필수
+                .password(passwordEncoder.encode(request.password()))   // 평문 비밀번호를 BCrypt 해시 알고리즘으로 암호화하여 저장
                 .build();
 
         return memberRepository.save(member).getId();
     }
 
     /**
-     * 기능 3: 로그인
+     * 로그인
      */
-    public Long login(MemberDto.LoginRequest request) {
+    public MemberDto.TokenResponse login(MemberDto.LoginRequest request) {
         Member member = memberRepository.findByEmail(request.email())
                 .orElseThrow(() -> new IllegalArgumentException("가입되지 않은 이메일입니다."));
 
-        if (!member.getPassword().equals(request.password())) {
+        // passwordEncoder.matches(평문, 암호화된문자열)을 사용하여 일치 여부를 확인합니다.
+        if (!passwordEncoder.matches(request.password(), member.getPassword())) {
             throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
         }
 
-        // 실제로는 JWT 토큰 등을 발급하여 반환합니다.
-        return member.getId();
+        // 비밀번호가 일치하면 JWT 토큰을 생성하여 반환합니다.
+        String token = jwtTokenProvider.createToken(member.getEmail(), member.getId());
+
+        return new MemberDto.TokenResponse(member.getId(), token);
     }
 
     /**
-     * 기능 4: 팔로워 목록 확인 (나를 팔로우 하는 사람)
+     * 팔로워 목록 확인 (나를 팔로우 하는 사람)
      */
     public List<MemberDto.FollowListResponse> getFollowers(Long memberId) {
         return followRepository.findAllByFollowingIdWithFollower(memberId).stream()
@@ -67,7 +74,7 @@ public class MemberService {
     }
 
     /**
-     * 기능 4: 팔로잉 목록 확인 (내가 팔로우 하는 사람)
+     * 팔로잉 목록 확인 (내가 팔로우 하는 사람)
      */
     public List<MemberDto.FollowListResponse> getFollowings(Long memberId) {
         return followRepository.findAllByFollowerIdWithFollowing(memberId).stream()
@@ -79,7 +86,7 @@ public class MemberService {
     }
 
     /**
-     * 기능 7: 다른 사용자 팔로우 하기
+     * 다른 사용자 팔로우 하기
      */
     @Transactional
     public void followUser(Long followerId, Long followingId) {
@@ -104,7 +111,7 @@ public class MemberService {
     }
 
     /**
-     * 기능 8: 프로필 수정 (이름, 소개글)
+     * 프로필 수정 (이름, 소개글)
      */
     @Transactional
     public void updateProfile(Long memberId, MemberDto.UpdateProfileRequest request) {

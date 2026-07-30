@@ -23,7 +23,8 @@ public class MemberController {
 
     // [기능 3] 로그인
     @PostMapping("/login")
-    public ResponseEntity<Long> login(@RequestBody MemberDto.LoginRequest request) {
+    public ResponseEntity<MemberDto.TokenResponse> login(@RequestBody MemberDto.LoginRequest request) {
+        // 성공 시 200 OK와 함께 { "memberId": 1, "accessToken": "eyJhbGci..." } 형태의 JSON이 반환
         return ResponseEntity.ok(memberService.login(request));
     }
 
