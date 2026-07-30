@@ -2,12 +2,14 @@ package com.tricode.READLY.domain.chat.service;
 
 import com.tricode.READLY.domain.chat.entity.ChatMessage;
 // import com.tricode.READLY.domain.chat.repository.ChatMessageRepository; // Redis Repository
+import com.tricode.READLY.domain.chat.repository.ChatMessageRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -17,9 +19,9 @@ import org.springframework.web.client.RestTemplate;
 public class ChatConsumer {
 
     private final RestTemplate restTemplate;
-    // private final ChatMessageRepository chatMessageRepository;
+    private final ChatMessageRepository chatMessageRepository;
+    private final SimpMessageSendingOperations messagingTemplate; // 추가됨: STOMP 브로드캐스팅 객체
 
-    // AI를 식별할 수 있는 고유 ID (DB에 저장된 AI의 memberId)
     private static final Long AI_MEMBER_ID = 999L;
     private static final String AI_SERVER_URL = "http://localhost:8001/api/ai/chat"; // AI 팀원과 협의할 엔드포인트
 
@@ -28,9 +30,13 @@ public class ChatConsumer {
         log.info("Kafka로부터 수신된 메세지: {}", message.getContent());
 
         // 1. Redis에 저장 (기존 로직)
-        // chatMessageRepository.save(message);
+        chatMessageRepository.save(message);
 
-        // 2. AI 에이전트에게 메시지 전달 (AI가 보낸 메시지가 아닐 때만)
+        // 2. WebSocket 구독자들에게 실시간 브로드캐스팅 (필수!)
+        // "/sub/chat/clubs/{clubId}" 를 구독하고 있는 클라이언트들에게 메시지 전송
+        messagingTemplate.convertAndSend("/sub/chat/clubs/" + message.getClubId(), message);
+
+        // 3. AI 에이전트에게 메시지 전달 (AI가 보낸 메시지가 아닐 때만)
         if (!AI_MEMBER_ID.equals(message.getMemberId())) {
             sendToAiAgent(message);
         }
