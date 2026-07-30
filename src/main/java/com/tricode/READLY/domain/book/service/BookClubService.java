@@ -1,9 +1,9 @@
 package com.tricode.READLY.domain.book.service;
 
-import com.tricode.READLY.domain.book.dto.BookclubDto; // DTO import 추가
+import com.tricode.READLY.domain.book.dto.BookClubDto; // DTO import 추가
 import com.tricode.READLY.domain.book.entity.BookClub;
-import com.tricode.READLY.domain.book.repository.BookclubRepository; // 누락된 import 추가 가정
-import com.tricode.READLY.domain.book.repository.MemberBookclubRepository;
+import com.tricode.READLY.domain.book.repository.BookClubRepository; // 누락된 import 추가 가정
+import com.tricode.READLY.domain.book.repository.MemberBookClubRepository;
 import com.tricode.READLY.domain.chat.entity.ChatMessage;
 import com.tricode.READLY.domain.chat.service.ChatProducer;
 import lombok.RequiredArgsConstructor;
@@ -16,23 +16,23 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
-public class BookclubService {
+public class BookClubService {
 
-    private final BookclubRepository bookClubRepository;
-    private final MemberBookclubRepository memberBookclubRepository;
+    private final BookClubRepository bookClubRepository;
+    private final MemberBookClubRepository memberBookclubRepository;
     private final ChatProducer chatProducer;
 
     /**
      * 기능 2: 홈화면에서 독서모임의 상세 정보 보기
      */
-    public List<BookclubDto.HomeListResponse> getHomeBookClubs() {
+    public List<BookClubDto.HomeListResponse> getHomeBookClubs() {
         List<BookClub> clubs = bookClubRepository.findAll();
 
         return clubs.stream().map(club -> {
             int currentMemberCount = memberBookclubRepository.countByBookClubId(club.getId());
 
             // HomeBookClubListDto 대신 BookclubDto.HomeListResponse 사용
-            return new BookclubDto.HomeListResponse(
+            return new BookClubDto.HomeListResponse(
                     club.getName(),
                     club.getCreationDate(),
                     club.getCreationTime(),
@@ -48,7 +48,7 @@ public class BookclubService {
      * 기능 5: 독서모임 만들기
      */
     @Transactional
-    public Long createBookClub(BookclubDto.CreateRequest request) { // CreateBookClubRequest 대신 BookclubDto.CreateRequest 사용
+    public Long createBookClub(BookClubDto.CreateRequest request) { // CreateBookClubRequest 대신 BookclubDto.CreateRequest 사용
         BookClub bookClub = BookClub.builder()
                 .name(request.name()) // record는 getter가 필드명() 형태입니다.
                 .creationDate(request.date())

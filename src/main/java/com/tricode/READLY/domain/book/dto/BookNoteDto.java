@@ -1,6 +1,6 @@
 package com.tricode.READLY.domain.book.dto;
 
-public class BooknoteDto {
+public class BookNoteDto {
 
     // 독서록 작성 요청용 (직접 입력 or 텍스트 인식)
     public record CreateRequest(

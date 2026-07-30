@@ -49,7 +49,7 @@ public class BookClub {
     }
 
     @OneToMany(mappedBy = "bookClub")
-    private List<MemberBookclub> memberBookClubs = new ArrayList<>();
+    private List<MemberBookClub> memberBookClubs = new ArrayList<>();
 
     @OneToMany(mappedBy = "bookClub")
     private List<ChatBookclub> chatBookClubs = new ArrayList<>();

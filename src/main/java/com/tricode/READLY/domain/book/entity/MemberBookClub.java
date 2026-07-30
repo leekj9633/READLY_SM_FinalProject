@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @Getter
 @NoArgsConstructor
-public class MemberBookclub {
+public class MemberBookClub {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

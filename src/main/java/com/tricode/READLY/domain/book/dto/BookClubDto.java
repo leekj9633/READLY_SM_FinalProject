@@ -5,7 +5,7 @@ import com.tricode.READLY.domain.book.entity.BookClub;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
-public class BookclubDto {
+public class BookClubDto {
 
     // 홈화면 독서모임 목록 응답용
     public record HomeListResponse(

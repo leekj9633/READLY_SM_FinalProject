@@ -1,6 +1,6 @@
 package com.tricode.READLY.domain.book.controller;
 
-import com.tricode.READLY.domain.book.service.BooknoteService;
+import com.tricode.READLY.domain.book.service.BookNoteService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -8,9 +8,9 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/notes")
-public class BooknoteController {
+public class BookNoteController {
 
-    private final BooknoteService bookNoteService;
+    private final BookNoteService bookNoteService;
 
     /**
      * 기능: 책을 읽을 때마다 가볍게 독서록 여러 개 남기기

@@ -1,6 +1,6 @@
 package com.tricode.READLY.domain.chat.controller;
 
-import com.tricode.READLY.domain.book.service.BookclubService;
+import com.tricode.READLY.domain.book.service.BookClubService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class ChatController {
 
-    private final BookclubService bookClubService;
+    private final BookClubService bookClubService;
 
     /**
      * 1. REST API 방식) 외부 API나 단순 HTTP 요청으로 채팅을 보낼 때 사용

@@ -8,7 +8,7 @@ import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
-public interface BooknoteRepository extends JpaRepository<BookNote, Long> {
+public interface BookNoteRepository extends JpaRepository<BookNote, Long> {
 
     // 특정 회원이 특정 책에 대해 작성한 모든 독서록 목록 조회
     // (BookNote 엔티티의 Book 필드명이 name으로 되어 있으므로 bn.name.id 참조)
