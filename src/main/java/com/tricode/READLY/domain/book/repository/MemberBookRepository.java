@@ -11,4 +11,7 @@ public interface MemberBookRepository extends JpaRepository<MemberBook, Long> {
 
     @Query("select mb from MemberBook mb join fetch mb.book where mb.member.id = :memberId")
     List<MemberBook> findAllByMemberIdWithBook(@Param("memberId") Long memberId);
+
+    // 이미 내 목록에 담은 책인지 확인
+    boolean existsByMemberIdAndBookId(Long memberId, Long bookId);
 }

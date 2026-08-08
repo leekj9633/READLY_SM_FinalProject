@@ -22,6 +22,11 @@ public class BookClub {
     @Column(nullable = false)
     private String name;
 
+    // 이 북클럽이 함께 읽는 책 (책 1권에 여러 북클럽이 생길 수 있다)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "book_id")
+    private Book book;
+
     private LocalDate creationDate;
     private LocalTime creationTime;
 

@@ -2,13 +2,14 @@ package com.tricode.READLY.domain.book.entity;
 
 import com.tricode.READLY.domain.member.entity.Member;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 // Member - BookClub 매핑 (회원의 북클럽 가입 정보)
 @Entity
 @Getter
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
+@Builder
 public class MemberBookClub {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)

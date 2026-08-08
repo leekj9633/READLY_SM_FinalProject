@@ -9,7 +9,11 @@ public class BookClubDto {
 
     // 홈화면 독서모임 목록 응답용
     public record HomeListResponse(
+            Long clubId,
             String name,
+            Long bookId,
+            String bookName,
+            String bookCoverImageUrl,
             LocalDate date,
             LocalTime time,
             int currentMemberCount,

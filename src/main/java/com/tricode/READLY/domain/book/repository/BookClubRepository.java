@@ -2,10 +2,15 @@ package com.tricode.READLY.domain.book.repository;
 
 import com.tricode.READLY.domain.book.entity.BookClub;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
+
+import java.util.List;
 
 @Repository
 public interface BookClubRepository extends JpaRepository<BookClub, Long> {
-    // 기본적인 CRUD 및 findAll() 메서드는 JpaRepository가 자동으로 제공
-    // 추가적인 사용자 정의 쿼리가 필요하다면 이곳에 메서드를 선언
+
+    // 목록 조회 시 책 정보를 함께 가져온다 (책마다 쿼리가 또 나가는 것을 방지)
+    @Query("select bc from BookClub bc left join fetch bc.book")
+    List<BookClub> findAllWithBook();
 }

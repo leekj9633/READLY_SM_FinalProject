@@ -5,6 +5,8 @@ import com.tricode.READLY.domain.book.entity.Book;
 import com.tricode.READLY.domain.book.entity.MemberBook;
 import com.tricode.READLY.domain.book.repository.BookRepository;
 import com.tricode.READLY.domain.book.repository.MemberBookRepository;
+import com.tricode.READLY.domain.member.entity.Member;
+import com.tricode.READLY.domain.member.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,6 +21,7 @@ public class BookService {
 
     private final BookRepository bookRepository;
     private final MemberBookRepository memberBookRepository;
+    private final MemberRepository memberRepository;
 
     /**
      * 홈화면에서 가장 인기가 많은 책의 제목과 커버 이미지 보여주기
@@ -49,5 +52,43 @@ public class BookService {
                         mb.getBook().getCoverImageUrl()
                 ))
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * 책 등록하기 (외부 도서 API에서 검색한 책을 우리 DB에 저장)
+     */
+    @Transactional
+    public Long registerBook(BookDto.CreateRequest request) {
+        Book book = Book.builder()
+                .name(request.name())
+                .writer(request.writer())
+                .coverImageUrl(request.coverImageUrl())
+                .pageCount(request.pageCount())
+                .width(request.width())
+                .height(request.height())
+                .build();
+
+        bookRepository.save(book);
+        return book.getId();
+    }
+
+    /**
+     * 내가 읽은 책 목록에 책 추가하기
+     */
+    @Transactional
+    public void addBookToMyList(Long bookId, Long memberId) {
+        Book book = bookRepository.findById(bookId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 책입니다."));
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new IllegalArgumentException("회원을 찾을 수 없습니다."));
+
+        if (memberBookRepository.existsByMemberIdAndBookId(memberId, bookId)) {
+            throw new IllegalStateException("이미 목록에 담은 책입니다.");
+        }
+
+        memberBookRepository.save(MemberBook.builder()
+                .member(member)
+                .book(book)
+                .build());
     }
 }

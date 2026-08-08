@@ -14,4 +14,14 @@ public class BookDto {
             String name,
             String coverImageUrl
     ) {}
+
+    // 책 등록 요청용 (외부 도서 API에서 가져온 정보를 그대로 넘겨받는다고 가정)
+    public record CreateRequest(
+            String name,
+            String writer,
+            String coverImageUrl,
+            Integer pageCount,
+            Double width,
+            Double height
+    ) {}
 }

@@ -16,4 +16,7 @@ public interface MemberBookClubRepository extends JpaRepository<MemberBookClub, 
     List<MemberBookClub> findAllByBookClubIdWithMember(@Param("clubId") Long clubId);
 
     int countByBookClubId(Long bookClubId);
+
+    // 이미 가입한 북클럽인지 확인
+    boolean existsByMemberIdAndBookClubId(Long memberId, Long bookClubId);
 }

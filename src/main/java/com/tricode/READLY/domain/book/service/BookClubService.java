@@ -1,11 +1,14 @@
 package com.tricode.READLY.domain.book.service;
 
-import com.tricode.READLY.domain.book.dto.BookClubDto; // DTO import 추가
+import com.tricode.READLY.domain.book.dto.BookClubDto;
+import com.tricode.READLY.domain.book.entity.Book;
 import com.tricode.READLY.domain.book.entity.BookClub;
-import com.tricode.READLY.domain.book.repository.BookClubRepository; // 누락된 import 추가 가정
+import com.tricode.READLY.domain.book.entity.MemberBookClub;
+import com.tricode.READLY.domain.book.repository.BookClubRepository;
+import com.tricode.READLY.domain.book.repository.BookRepository;
 import com.tricode.READLY.domain.book.repository.MemberBookClubRepository;
-import com.tricode.READLY.domain.chat.entity.ChatMessage;
-import com.tricode.READLY.domain.chat.service.ChatProducer;
+import com.tricode.READLY.domain.member.entity.Member;
+import com.tricode.READLY.domain.member.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,20 +23,25 @@ public class BookClubService {
 
     private final BookClubRepository bookClubRepository;
     private final MemberBookClubRepository memberBookclubRepository;
-    private final ChatProducer chatProducer;
+    private final BookRepository bookRepository;
+    private final MemberRepository memberRepository;
 
     /**
      * 기능 2: 홈화면에서 독서모임의 상세 정보 보기
      */
     public List<BookClubDto.HomeListResponse> getHomeBookClubs() {
-        List<BookClub> clubs = bookClubRepository.findAll();
+        List<BookClub> clubs = bookClubRepository.findAllWithBook();
 
         return clubs.stream().map(club -> {
             int currentMemberCount = memberBookclubRepository.countByBookClubId(club.getId());
+            Book book = club.getBook(); // 아직 책이 연결되지 않은 기존 모임은 null일 수 있다
 
-            // HomeBookClubListDto 대신 BookclubDto.HomeListResponse 사용
             return new BookClubDto.HomeListResponse(
+                    club.getId(),
                     club.getName(),
+                    book != null ? book.getId() : null,
+                    book != null ? book.getName() : null,
+                    book != null ? book.getCoverImageUrl() : null,
                     club.getCreationDate(),
                     club.getCreationTime(),
                     currentMemberCount,
@@ -45,12 +53,18 @@ public class BookClubService {
     }
 
     /**
-     * 기능 5: 독서모임 만들기
+     * 기능 5: 독서모임 만들기 (만든 사람은 자동으로 가입된다)
      */
     @Transactional
-    public Long createBookClub(BookClubDto.CreateRequest request) { // CreateBookClubRequest 대신 BookclubDto.CreateRequest 사용
+    public Long createBookClub(Long memberId, BookClubDto.CreateRequest request) {
+        Book book = bookRepository.findById(request.bookId())
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 책입니다."));
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new IllegalArgumentException("회원을 찾을 수 없습니다."));
+
         BookClub bookClub = BookClub.builder()
-                .name(request.name()) // record는 getter가 필드명() 형태입니다.
+                .name(request.name())
+                .book(book)
                 .creationDate(request.date())
                 .creationTime(request.time())
                 .memberCapacity(request.maxCapacity())
@@ -59,23 +73,63 @@ public class BookClubService {
                 .build();
 
         bookClubRepository.save(bookClub);
+
+        memberBookclubRepository.save(MemberBookClub.builder()
+                .member(member)
+                .bookClub(bookClub)
+                .build());
+
         return bookClub.getId();
     }
 
     /**
-     * 기능 6: 독서모임에서 AI 및 다른 사용자들과 채팅하기
+     * 독서모임 가입하기
      */
-    public void sendMessageToBookClub(Long clubId, Long memberId, String content) {
-        // ChatMessage 구조(빌더 또는 생성자)에 맞게 객체를 생성합니다.
-        // (주의: ChatMessage 엔티티에 선언된 실제 필드명에 맞게 .clubId(), .memberId() 부분을 맞춰주셔야 합니다.)
-        ChatMessage message = ChatMessage.builder()
-                .clubId(clubId)       // 실제 필드명으로 수정 필요 (예: bookClubId 등)
-                .memberId(memberId)
-                .content(content)
-                .build();
+    @Transactional
+    public void joinBookClub(Long clubId, Long memberId) {
+        BookClub bookClub = bookClubRepository.findById(clubId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 독서모임입니다."));
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new IllegalArgumentException("회원을 찾을 수 없습니다."));
 
-        // 3개의 매개변수 대신 생성한 객체 1개를 넘겨줍니다.
-        chatProducer.sendMessage(message);
-
+        if (memberBookclubRepository.existsByMemberIdAndBookClubId(memberId, clubId)) {
+            throw new IllegalStateException("이미 가입한 독서모임입니다.");
         }
+        if (bookClub.getStatus() == BookClub.ClubStatus.COMPLETED) {
+            throw new IllegalStateException("이미 종료된 독서모임입니다.");
+        }
+        if (memberBookclubRepository.countByBookClubId(clubId) >= bookClub.getMemberCapacity()) {
+            throw new IllegalStateException("정원이 가득 찬 독서모임입니다.");
+        }
+
+        memberBookclubRepository.save(MemberBookClub.builder()
+                .member(member)
+                .bookClub(bookClub)
+                .build());
+    }
+
+    /**
+     * 내가 가입한 독서모임 목록
+     */
+    public List<BookClubDto.HomeListResponse> getMyBookClubs(Long memberId) {
+        return memberBookclubRepository.findAllByMemberIdWithBookClub(memberId).stream()
+                .map(MemberBookClub::getBookClub)
+                .map(club -> {
+                    Book book = club.getBook();
+                    return new BookClubDto.HomeListResponse(
+                            club.getId(),
+                            club.getName(),
+                            book != null ? book.getId() : null,
+                            book != null ? book.getName() : null,
+                            book != null ? book.getCoverImageUrl() : null,
+                            club.getCreationDate(),
+                            club.getCreationTime(),
+                            memberBookclubRepository.countByBookClubId(club.getId()),
+                            club.getMemberCapacity(),
+                            club.getStatus(),
+                            club.getType()
+                    );
+                })
+                .collect(Collectors.toList());
+    }
 }
