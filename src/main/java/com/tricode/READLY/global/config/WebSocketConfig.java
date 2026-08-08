@@ -1,6 +1,8 @@
 package com.tricode.READLY.global.config;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.messaging.simp.config.ChannelRegistration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
@@ -8,7 +10,16 @@ import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerCo
 
 @Configuration
 @EnableWebSocketMessageBroker
+@RequiredArgsConstructor
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
+
+    private final StompAuthChannelInterceptor stompAuthChannelInterceptor;
+
+    // 클라이언트가 보내는 모든 STOMP 메시지가 거쳐가는 채널에 인증 인터셉터를 건다
+    @Override
+    public void configureClientInboundChannel(ChannelRegistration registration) {
+        registration.interceptors(stompAuthChannelInterceptor);
+    }
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {

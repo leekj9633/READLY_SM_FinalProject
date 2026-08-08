@@ -5,6 +5,7 @@ import com.tricode.READLY.domain.chat.entity.ChatMessage;
 import com.tricode.READLY.domain.chat.repository.ChatMessageRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -22,8 +23,8 @@ public class ChatConsumer {
     private final ChatMessageRepository chatMessageRepository;
     private final SimpMessageSendingOperations messagingTemplate; // 추가됨: STOMP 브로드캐스팅 객체
 
-    private static final Long AI_MEMBER_ID = 999L;
-    private static final String AI_SERVER_URL = "http://localhost:8001/api/ai/chat"; // AI 팀원과 협의할 엔드포인트
+    @Value("${ai.base-url}")
+    private String aiBaseUrl;
 
     @KafkaListener(topics = "chat-group", groupId = "reading-group")
     public void consume(ChatMessage message) {
@@ -37,7 +38,7 @@ public class ChatConsumer {
         messagingTemplate.convertAndSend("/sub/chat/clubs/" + message.getClubId(), message);
 
         // 3. AI 에이전트에게 메시지 전달 (AI가 보낸 메시지가 아닐 때만)
-        if (!AI_MEMBER_ID.equals(message.getMemberId())) {
+        if (!ChatService.AI_MEMBER_ID.equals(message.getMemberId())) {
             sendToAiAgent(message);
         }
     }
@@ -56,8 +57,7 @@ public class ChatConsumer {
 
             HttpEntity<AiMessageRequest> requestEntity = new HttpEntity<>(requestBody, headers);
 
-            // 8001번 포트로 POST 요청 전송
-            restTemplate.postForEntity(AI_SERVER_URL, requestEntity, String.class);
+            restTemplate.postForEntity(aiBaseUrl + "/api/ai/chat", requestEntity, String.class);
             log.info("AI 에이전트로 메시지 전송 성공 (clubId: {})", message.getClubId());
 
         } catch (Exception e) {
