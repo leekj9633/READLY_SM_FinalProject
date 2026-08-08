@@ -26,3 +26,12 @@ spring:
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
       properties:
         spring.json.trusted.packages: "*" # 모든 패키지의 객체 변환을 허용
+
+jwt:
+  secret: readly-local-dev-secret-key-please-change-me-32bytes!
+  access-token-validity-in-seconds: 3600
+
+ai:
+  base-url: http://localhost:8001
+  # AI 서버가 우리 채팅 API를 호출할 때 X-AI-API-KEY 헤더에 넣어야 하는 값
+  api-key: readly-local-ai-key
