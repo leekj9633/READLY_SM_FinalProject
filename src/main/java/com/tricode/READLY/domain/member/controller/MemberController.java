@@ -4,6 +4,7 @@ import com.tricode.READLY.domain.member.dto.MemberDto;
 import com.tricode.READLY.domain.member.service.MemberService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -41,18 +42,19 @@ public class MemberController {
     }
 
     // [기능 7] 다른 사용자 팔로우 (ex: BookClub에서 프로필 누르고 팔로우)
+    // 팔로우하는 주체는 요청 파라미터가 아니라 토큰에서 가져온다 (남의 이름으로 팔로우 방지)
     @PostMapping("/{followingId}/follow")
     public ResponseEntity<Void> followUser(
             @PathVariable Long followingId,
-            @RequestParam Long myMemberId) { // 실제로는 세션이나 토큰에서 내 ID를 가져옴
+            @AuthenticationPrincipal Long myMemberId) {
         memberService.followUser(myMemberId, followingId);
         return ResponseEntity.ok().build();
     }
 
-    // [기능 8] 마이페이지 프로필 수정
-    @PatchMapping("/{memberId}/profile")
+    // [기능 8] 마이페이지 프로필 수정 (본인 것만 수정 가능)
+    @PatchMapping("/me/profile")
     public ResponseEntity<Void> updateProfile(
-            @PathVariable Long memberId,
+            @AuthenticationPrincipal Long memberId,
             @RequestBody MemberDto.UpdateProfileRequest request) {
         memberService.updateProfile(memberId, request);
         return ResponseEntity.ok().build();
