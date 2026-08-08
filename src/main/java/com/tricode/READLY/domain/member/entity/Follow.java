@@ -26,4 +26,12 @@ public class Follow {
 
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
+
+    // createdAt은 nullable = false 이므로 저장 직전에 반드시 채워준다
+    @PrePersist
+    protected void onCreate() {
+        if (this.createdAt == null) {
+            this.createdAt = LocalDateTime.now();
+        }
+    }
 }

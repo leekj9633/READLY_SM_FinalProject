@@ -42,5 +42,24 @@ public class Member {
 
     @OneToMany(mappedBy = "member")
     private List<MemberBookClub> memberBookClubs = new ArrayList<>();
+
+    // 프로필 수정 (더티 체킹) — null로 들어온 항목은 기존 값을 유지
+    public void updateProfile(String name, String introduction) {
+        if (name != null && !name.isBlank()) {
+            this.name = name;
+        }
+        if (introduction != null) {
+            this.introduction = introduction;
+        }
+    }
+
+    // 팔로우 발생 시 양쪽 카운터 갱신
+    public void increaseFollowingCount() {
+        this.followingCount++;
+    }
+
+    public void increaseFollowerCount() {
+        this.followerCount++;
+    }
 }
 

@@ -97,8 +97,10 @@ public class MemberService {
             throw new IllegalStateException("이미 팔로우 중인 사용자입니다.");
         }
 
-        Member follower = memberRepository.findById(followerId).orElseThrow();
-        Member following = memberRepository.findById(followingId).orElseThrow();
+        Member follower = memberRepository.findById(followerId)
+                .orElseThrow(() -> new IllegalArgumentException("회원을 찾을 수 없습니다."));
+        Member following = memberRepository.findById(followingId)
+                .orElseThrow(() -> new IllegalArgumentException("팔로우할 회원을 찾을 수 없습니다."));
 
         Follow follow = Follow.builder()
                 .follower(follower)
@@ -107,7 +109,9 @@ public class MemberService {
 
         followRepository.save(follow);
 
-        // 추가: Member 엔티티의 followerCount, followingCount 증가 로직 (엔티티에 메서드 구현 필요)
+        // 양쪽 카운터 갱신 (더티 체킹)
+        follower.increaseFollowingCount();
+        following.increaseFollowerCount();
     }
 
     /**
@@ -118,7 +122,14 @@ public class MemberService {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new IllegalArgumentException("회원을 찾을 수 없습니다."));
 
-        // 엔티티에 updateProfile 메서드가 만들어져 있다고 가정 (더티 체킹)
-        // member.updateProfile(request.name(), request.introduction());
+        // name은 unique 제약이 걸려 있으므로 중복 여부를 먼저 확인한다
+        String newName = request.name();
+        if (newName != null && !newName.isBlank()
+                && !newName.equals(member.getName())
+                && memberRepository.existsByName(newName)) {
+            throw new IllegalArgumentException("이미 사용 중인 이름입니다.");
+        }
+
+        member.updateProfile(newName, request.introduction()); // 더티 체킹으로 반영
     }
 }
