@@ -1,5 +1,6 @@
 package com.tricode.READLY.domain.book.service;
 
+import com.tricode.READLY.domain.book.dto.BookNoteDto;
 import com.tricode.READLY.domain.book.entity.AINote;
 import com.tricode.READLY.domain.book.entity.Book;
 import com.tricode.READLY.domain.book.entity.BookNote;
@@ -9,12 +10,19 @@ import com.tricode.READLY.domain.book.repository.BookNoteRepository;
 import com.tricode.READLY.domain.member.entity.Member;
 import com.tricode.READLY.domain.member.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -24,7 +32,10 @@ public class BookNoteService {
     private final AINoteRepository aiNoteRepository;
     private final BookRepository bookRepository;
     private final MemberRepository memberRepository;
-    // private final AiClientService aiClientService; // (외부 AI API 호출용 클래스 가정)
+    private final RestTemplate restTemplate;
+
+    @Value("${ai.base-url}")
+    private String aiBaseUrl;
 
     /**
      * 각 책에다 가볍게 독서록 남기기 (카메라 텍스트 인식 혹은 직접 입력)
@@ -81,7 +92,25 @@ public class BookNoteService {
                         .build()));
 
         aiNote.applyAiContent(aiGeneratedContent); // 기존 AINote면 더티 체킹으로 갱신
+        aiNote.applyTags(analyzeTags(aiGeneratedContent));
         return aiNote.getId();
+    }
+
+    // 완성된 독서록 내용을 AI 서버에 보내 성향 태그를 분석받기
+    private String analyzeTags(String review) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        HttpEntity<BookNoteDto.TagAnalyzeRequest> requestEntity =
+                new HttpEntity<>(new BookNoteDto.TagAnalyzeRequest(review), headers);
+
+        try {
+            BookNoteDto.TagAnalyzeResponse response = restTemplate.postForObject(
+                    aiBaseUrl + "/api/preference/analyze", requestEntity, BookNoteDto.TagAnalyzeResponse.class);
+            return response != null ? String.join(",", response.tags()) : null;
+        } catch (Exception e) {
+            log.error("AI 성향 태그 분석 요청 실패: ", e);
+            return null;
+        }
     }
 
     /**

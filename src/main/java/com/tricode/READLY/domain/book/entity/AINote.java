@@ -35,10 +35,18 @@ public class AINote {
     @Column(nullable = false)
     private boolean edited;
 
+    @Column(columnDefinition = "TEXT")
+    private String tags; // AI가 이 독서록에 붙인 성향 태그, 콤마로 구분 저장 (예: "성장서사,잔잔한 분위기")
+
     // AI가 새로 생성한 내용으로 채우기 (재생성 시 회원 수정분은 덮어써짐)
     public void applyAiContent(String content) {
         this.content = content;
         this.edited = false;
+    }
+
+    // AI가 분석한 성향 태그로 채우기
+    public void applyTags(String tags) {
+        this.tags = tags;
     }
 
     // 회원이 AI 독서록 내용을 직접 수정 (더티 체킹)
