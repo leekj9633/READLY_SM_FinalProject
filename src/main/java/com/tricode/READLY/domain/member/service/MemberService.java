@@ -32,10 +32,13 @@ public class MemberService {
         if (memberRepository.existsByEmail(request.email())) {
             throw new IllegalArgumentException("이미 사용 중인 이메일입니다.");
         }
+        if (memberRepository.existsByLoginId(request.loginId())) {
+            throw new IllegalArgumentException("이미 사용 중인 아이디입니다.");
+        }
 
-        // 엔티티에 name 필드가 추가되었다고 가정
         Member member = Member.builder()
-                .name(request.name())
+                .loginId(request.loginId())
+                .nickname(request.loginId()) // 닉네임 초기값은 아이디로, 이후 프로필에서 수정 가능
                 .email(request.email())
                 .password(passwordEncoder.encode(request.password()))   // 평문 비밀번호를 BCrypt 해시 알고리즘으로 암호화하여 저장
                 .build();
@@ -68,7 +71,7 @@ public class MemberService {
         return followRepository.findAllByFollowingIdWithFollower(memberId).stream()
                 .map(follow -> new MemberDto.FollowListResponse(
                         follow.getFollower().getId(),
-                        follow.getFollower().getName(),
+                        follow.getFollower().getNickname(),
                         follow.getFollower().getIntroduction()
                 )).collect(Collectors.toList());
     }
@@ -80,7 +83,7 @@ public class MemberService {
         return followRepository.findAllByFollowerIdWithFollowing(memberId).stream()
                 .map(follow -> new MemberDto.FollowListResponse(
                         follow.getFollowing().getId(),
-                        follow.getFollowing().getName(),
+                        follow.getFollowing().getNickname(),
                         follow.getFollowing().getIntroduction()
                 )).collect(Collectors.toList());
     }
@@ -115,21 +118,13 @@ public class MemberService {
     }
 
     /**
-     * 프로필 수정 (이름, 소개글)
+     * 프로필 수정 (닉네임, 소개글) — 로그인 아이디는 여기서 바꾸지 않는다
      */
     @Transactional
     public void updateProfile(Long memberId, MemberDto.UpdateProfileRequest request) {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new IllegalArgumentException("회원을 찾을 수 없습니다."));
 
-        // name은 unique 제약이 걸려 있으므로 중복 여부를 먼저 확인한다
-        String newName = request.name();
-        if (newName != null && !newName.isBlank()
-                && !newName.equals(member.getName())
-                && memberRepository.existsByName(newName)) {
-            throw new IllegalArgumentException("이미 사용 중인 이름입니다.");
-        }
-
-        member.updateProfile(newName, request.introduction()); // 더티 체킹으로 반영
+        member.updateProfile(request.nickname(), request.introduction()); // 더티 체킹으로 반영
     }
 }

@@ -20,8 +20,11 @@ public class Member {
     @Column(name = "member_id")
     private Long id;
 
-    @Column(nullable = false, unique = true)
-    private String name;    // 사용자의 ID
+    // DB 컬럼명(name)은 그대로 두고 자바 필드명만 명확하게 바꿈 (ddl-auto: update가 컬럼을 못 지우므로 실제 rename은 피함)
+    @Column(name = "name", nullable = false, unique = true)
+    private String loginId;    // 사용자가 로그인 시 입력하는 아이디
+
+    private String nickname;   // 화면(채팅 등)에 노출되는 닉네임
 
     @Column(nullable = false, unique = true)
     private String email;   // 사용자의 이메일
@@ -44,9 +47,9 @@ public class Member {
     private List<MemberBookClub> memberBookClubs = new ArrayList<>();
 
     // 프로필 수정 (더티 체킹) — null로 들어온 항목은 기존 값을 유지
-    public void updateProfile(String name, String introduction) {
-        if (name != null && !name.isBlank()) {
-            this.name = name;
+    public void updateProfile(String nickname, String introduction) {
+        if (nickname != null && !nickname.isBlank()) {
+            this.nickname = nickname;
         }
         if (introduction != null) {
             this.introduction = introduction;

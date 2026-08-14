@@ -4,7 +4,7 @@ public class MemberDto {
 
     // 회원가입 요청
     public record SignUpRequest(
-            String name,
+            String loginId,
             String email,
             String password
     ) {}
@@ -24,20 +24,20 @@ public class MemberDto {
     // 팔로우/팔로잉 목록 응답
     public record FollowListResponse(
             Long memberId,
-            String name,
+            String nickname,
             String introduction
     ) {}
 
-    // 프로필 수정 요청
+    // 프로필 수정 요청 (로그인 아이디는 여기서 바꾸지 않는다)
     public record UpdateProfileRequest(
-            String name,
+            String nickname,
             String introduction
     ) {}
 
     // 프로필 정보 응답 (공통)
     public record ProfileResponse(
             Long memberId,
-            String name,
+            String nickname,
             String email,
             String introduction,
             int followerCount,
