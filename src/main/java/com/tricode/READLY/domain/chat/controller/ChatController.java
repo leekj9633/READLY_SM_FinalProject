@@ -67,4 +67,17 @@ public class ChatController {
         chatService.requestMeetingAssist(clubId, memberId);
         return ResponseEntity.ok().build();
     }
+
+    /**
+     * 모임장 전용 AI 진행자 개입 버튼.
+     * 최근 대화를 AI 서버로 보내고, 응답을 AI 이름으로 채팅방에 바로 발행한다.
+     */
+    @PostMapping("/api/book-clubs/{clubId}/ai-assist")
+    public ResponseEntity<Void> requestAiAssist(
+            @PathVariable Long clubId,
+            @AuthenticationPrincipal Long memberId,
+            @RequestBody ChatDto.AiAssistRequest request) {
+        chatService.requestAiAssist(clubId, memberId, request.mode());
+        return ResponseEntity.ok().build();
+    }
 }

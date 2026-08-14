@@ -19,4 +19,7 @@ public interface MemberBookClubRepository extends JpaRepository<MemberBookClub, 
 
     // 이미 가입한 북클럽인지 확인
     boolean existsByMemberIdAndBookClubId(Long memberId, Long bookClubId);
+
+    // 모임장 확인용: 가장 먼저 가입한 회원(=클럽 생성자)을 조회 (createBookClub에서 생성자를 가장 먼저 저장하기 때문)
+    MemberBookClub findFirstByBookClubIdOrderByIdAsc(Long bookClubId);
 }
