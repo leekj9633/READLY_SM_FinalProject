@@ -38,3 +38,12 @@ out/
 
 ### Claude Code ###
 CLAUDE.md
+
+### Secrets ###
+.env
+.env.*
+!.env.example
+**/application-local.yaml
+**/application-local.yml
+**/application-secret.yaml
+!**/application-local.yaml.example

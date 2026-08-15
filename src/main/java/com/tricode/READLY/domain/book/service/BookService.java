@@ -1,5 +1,7 @@
 package com.tricode.READLY.domain.book.service;
 
+import com.tricode.READLY.domain.book.client.AladinBookClient;
+import com.tricode.READLY.domain.book.dto.AladinDto;
 import com.tricode.READLY.domain.book.dto.BookDto;
 import com.tricode.READLY.domain.book.entity.Book;
 import com.tricode.READLY.domain.book.entity.MemberBook;
@@ -22,6 +24,7 @@ public class BookService {
     private final BookRepository bookRepository;
     private final MemberBookRepository memberBookRepository;
     private final MemberRepository memberRepository;
+    private final AladinBookClient aladinBookClient;
 
     /**
      * 홈화면에서 가장 인기가 많은 책의 제목과 커버 이미지 보여주기
@@ -70,6 +73,33 @@ public class BookService {
 
         bookRepository.save(book);
         return book.getId();
+    }
+
+    /**
+     * ISBN13으로 책 가져오기.
+     * 이미 DB에 있으면 알라딘 API를 호출하지 않고 그대로 반환하고,
+     * 없으면 알라딘에서 조회한 뒤 Book 테이블에 저장한다.
+     */
+    @Transactional
+    public Book getOrCreateBookByIsbn13(String isbn13) {
+        return bookRepository.findByIsbn13(isbn13)
+                .orElseGet(() -> bookRepository.save(toBook(isbn13, aladinBookClient.lookUpByIsbn13(isbn13))));
+    }
+
+    // 알라딘 응답을 Book 엔티티로 변환 (subInfo는 OptResult 옵션이 빠지면 null일 수 있어 방어적으로 읽는다)
+    private Book toBook(String isbn13, AladinDto.Item item) {
+        AladinDto.SubInfo subInfo = item.subInfo();
+        AladinDto.Packing packing = subInfo != null ? subInfo.packing() : null;
+
+        return Book.builder()
+                .isbn13(item.isbn13() != null ? item.isbn13() : isbn13)
+                .name(item.title())
+                .writer(item.author())
+                .coverImageUrl(item.cover())
+                .pageCount(subInfo != null ? subInfo.itemPage() : null)
+                .width(packing != null && packing.sizeWidth() != null ? packing.sizeWidth().doubleValue() : null)
+                .height(packing != null && packing.sizeHeight() != null ? packing.sizeHeight().doubleValue() : null)
+                .build();
     }
 
     /**

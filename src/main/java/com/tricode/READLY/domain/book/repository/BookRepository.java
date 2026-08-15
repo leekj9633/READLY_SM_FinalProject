@@ -19,4 +19,9 @@ public interface BookRepository extends JpaRepository<Book, Long> {
             "GROUP BY b " +
             "ORDER BY COUNT(mb) DESC LIMIT 1")
     Optional<Book> findTopByOrderByMemberBooksDesc();
+
+    /**
+     * 이미 저장된 책인지 확인 (있으면 알라딘 API를 호출하지 않는다)
+     */
+    Optional<Book> findByIsbn13(String isbn13);
 }

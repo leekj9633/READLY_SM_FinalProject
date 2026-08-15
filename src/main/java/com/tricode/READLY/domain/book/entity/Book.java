@@ -21,6 +21,10 @@ public class Book {
     @Column(nullable = false)
     private String name;
 
+    // 알라딘 API 조회 기준값. 같은 ISBN이면 API를 다시 호출하지 않고 이 행을 재사용한다
+    @Column(unique = true)
+    private String isbn13;
+
     private String writer;
     private String coverImageUrl;   // 이미지를 S3, Supabase Storage, Firebase Storage 등에 저장하고 URL만 DB에 저장하는 방식
 
