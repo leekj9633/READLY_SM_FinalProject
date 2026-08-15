@@ -42,6 +42,14 @@ public class BookController {
     }
 
     /**
+     * 기능: ISBN13으로 책 조회 (DB에 없으면 알라딘 API로 가져와 저장한다)
+     */
+    @GetMapping("/isbn/{isbn13}")
+    public ResponseEntity<BookDto.IsbnResponse> getBookByIsbn(@PathVariable String isbn13) {
+        return ResponseEntity.ok(BookDto.IsbnResponse.from(bookService.getOrCreateBookByIsbn13(isbn13)));
+    }
+
+    /**
      * 기능: 내가 읽은 책 목록에 책 추가하기
      */
     @PostMapping("/{bookId}/my-list")

@@ -1,0 +1,15 @@
+# 복사해서 application-local.yaml 로 쓰고 실제 값을 채운다.
+# cp application-local.yaml.example application-local.yaml
+spring:
+  datasource:
+    username: postgres
+    password: CHANGE_ME
+
+jwt:
+  secret: CHANGE_ME_32BYTES_OR_LONGER_SECRET_KEY
+
+aladin:
+  ttb-key: CHANGE_ME_TTB_KEY
+
+ai:
+  api-key: CHANGE_ME_AI_KEY

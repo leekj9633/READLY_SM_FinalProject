@@ -31,6 +31,7 @@ dependencies {
 	annotationProcessor 'org.projectlombok:lombok'
 
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testRuntimeOnly 'com.h2database:h2' // JPA 저장 로직 테스트용 (운영은 PostgreSQL)
 	testImplementation 'org.springframework.kafka:spring-kafka-test'
 	testCompileOnly 'org.projectlombok:lombok'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
@@ -43,4 +44,10 @@ dependencies {
 
 tasks.named('test') {
 	useJUnitPlatform()
+	// 실제 알라딘 서버를 호출하는 테스트는 -Daladin.live=true 를 줄 때만 실행된다
+	systemProperty 'aladin.live', System.getProperty('aladin.live', 'false')
+	testLogging {
+		events 'passed', 'failed', 'skipped'
+		showStandardStreams = false
+	}
 }

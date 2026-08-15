@@ -16,8 +16,8 @@ public class JwtTokenProvider {
     private final Key key;
     private final long accessTokenValidityInMilliseconds;
 
-    // application.yml에 jwt.secret 값을 32바이트 이상으로 설정해주세요.
-    public JwtTokenProvider(@Value("${jwt.secret:defaultSecretKeyVeryVeryLongAndSecureEnough12345!}") String secretKey,
+    // jwt.secret은 32바이트 이상 필수. 미설정 시 기동 실패시킨다 (약한 기본키로 조용히 뜨는 것 방지)
+    public JwtTokenProvider(@Value("${jwt.secret}") String secretKey,
                             @Value("${jwt.access-token-validity-in-seconds:3600}") long accessTokenValidityInSeconds) {
         this.key = Keys.hmacShaKeyFor(secretKey.getBytes());
         this.accessTokenValidityInMilliseconds = accessTokenValidityInSeconds * 1000;
