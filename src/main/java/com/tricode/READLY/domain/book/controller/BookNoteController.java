@@ -7,6 +7,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/notes")
@@ -29,6 +31,28 @@ public class BookNoteController {
     }
 
     /**
+     * 기능: 내가 그 책에 쓴 독서록 목록 보기
+     */
+    @GetMapping("/books/{bookId}")
+    public ResponseEntity<List<BookNoteDto.NoteResponse>> getMyBookNotes(
+            @PathVariable Long bookId,
+            @AuthenticationPrincipal Long memberId) {
+
+        return ResponseEntity.ok(bookNoteService.getMyBookNotes(bookId, memberId));
+    }
+
+    /**
+     * 기능: 그 책에 대한 내 AI 독서록 보기 (아직 없으면 exists=false)
+     */
+    @GetMapping("/books/{bookId}/ai-note")
+    public ResponseEntity<BookNoteDto.AiNoteResponse> getMyAiBookNote(
+            @PathVariable Long bookId,
+            @AuthenticationPrincipal Long memberId) {
+
+        return ResponseEntity.ok(bookNoteService.getMyAiBookNote(bookId, memberId));
+    }
+
+    /**
      * 기능: 하나의 책에 대한 여러 독서록들을 기반으로 AI에게 독서록 써달라고 요청
      */
     @PostMapping("/books/{bookId}/ai-generate")
@@ -46,9 +70,10 @@ public class BookNoteController {
     @PatchMapping("/ai-notes/{aiNoteId}")
     public ResponseEntity<Void> updateAiBookNote(
             @PathVariable Long aiNoteId,
+            @AuthenticationPrincipal Long memberId,
             @RequestBody BookNoteDto.UpdateAiRequest request) {
 
-        bookNoteService.updateAiBookNote(aiNoteId, request.newAiContent());
+        bookNoteService.updateAiBookNote(aiNoteId, memberId, request.newAiContent());
         return ResponseEntity.ok().build();
     }
 }

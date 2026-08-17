@@ -26,6 +26,8 @@ public class BookService {
     private final MemberRepository memberRepository;
     private final AladinBookClient aladinBookClient;
 
+    private static final int SEARCH_MAX_RESULTS = 20; // 알라딘 검색 결과로 한 번에 받아올 최대 권수
+
     /**
      * 홈화면에서 가장 인기가 많은 책의 제목과 커버 이미지 보여주기
      *      (MemberBook에 가장 많이 매핑된 책을 인기 책으로 가정)
@@ -58,21 +60,27 @@ public class BookService {
     }
 
     /**
-     * 책 등록하기 (외부 도서 API에서 검색한 책을 우리 DB에 저장)
+     * 제목으로 책 검색하기 (알라딘 ItemSearch).
+     * 우리 DB에 저장하지는 않는다. 사용자가 결과 중 한 권을 고르면 그 isbn13으로 등록이 이어진다.
+     */
+    public List<BookDto.SearchResponse> searchBooks(String keyword) {
+        if (keyword == null || keyword.isBlank()) {
+            throw new IllegalArgumentException("검색어를 입력해 주세요.");
+        }
+
+        return aladinBookClient.searchByTitle(keyword.trim(), SEARCH_MAX_RESULTS).stream()
+                .map(BookDto.SearchResponse::from)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * 책 등록하기.
+     * 수기 입력은 받지 않는다. 검색 결과에서 고른 isbn13만 받아,
+     * 이미 있으면 그 행을 재사용하고 없으면 알라딘에서 상세를 받아 저장한다.
      */
     @Transactional
     public Long registerBook(BookDto.CreateRequest request) {
-        Book book = Book.builder()
-                .name(request.name())
-                .writer(request.writer())
-                .coverImageUrl(request.coverImageUrl())
-                .pageCount(request.pageCount())
-                .width(request.width())
-                .height(request.height())
-                .build();
-
-        bookRepository.save(book);
-        return book.getId();
+        return getOrCreateBookByIsbn13(request.isbn13()).getId();
     }
 
     /**

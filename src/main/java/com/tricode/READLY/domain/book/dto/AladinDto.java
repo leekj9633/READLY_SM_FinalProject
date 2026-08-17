@@ -5,11 +5,13 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.util.List;
 
 /**
- * 알라딘 ItemLookUp API 응답 파싱용 DTO.
+ * 알라딘 API 응답 파싱용 DTO.
  * 응답 필드가 매우 많으므로 필요한 것만 선언하고 나머지는 무시한다.
  */
 public class AladinDto {
 
+    // ItemLookUp(단건 조회)과 ItemSearch(제목 검색)의 응답 뼈대가 같아 하나로 쓴다.
+    // 차이는 item 목록의 길이뿐이다.
     @JsonIgnoreProperties(ignoreUnknown = true)
     public record LookUpResponse(
             List<Item> item,

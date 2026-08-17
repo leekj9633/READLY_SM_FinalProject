@@ -34,6 +34,17 @@ public class BookClubController {
     }
 
     /**
+     * 기능: 독서모임 상세 정보 보기 (방 입장).
+     * 응답의 role(HOST/PARTICIPANT)로 프론트가 방장 전용 UI 노출을 판단한다.
+     */
+    @GetMapping("/{clubId}")
+    public ResponseEntity<BookClubDto.DetailResponse> getBookClubDetail(
+            @PathVariable Long clubId,
+            @AuthenticationPrincipal Long memberId) {
+        return ResponseEntity.ok(bookClubService.getBookClubDetail(clubId, memberId));
+    }
+
+    /**
      * 기능: 독서모임 만들기 (만든 사람은 자동 가입)
      */
     @PostMapping

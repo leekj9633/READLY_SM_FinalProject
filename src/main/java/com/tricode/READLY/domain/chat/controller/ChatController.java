@@ -14,6 +14,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -55,6 +56,17 @@ public class ChatController {
 
         Long memberId = (Long) ((Authentication) principal).getPrincipal();
         chatService.sendMessage(clubId, memberId, request.content());
+    }
+
+    /**
+     * 채팅방 재입장 시 지난 대화를 불러오는 REST API.
+     * 가입한 회원만 조회할 수 있고, Redis TTL(7일)이 지난 메시지는 이미 사라진 상태다.
+     */
+    @GetMapping("/api/book-clubs/{clubId}/chats")
+    public ResponseEntity<List<ChatDto.HistoryItem>> getChatHistory(
+            @PathVariable Long clubId,
+            @AuthenticationPrincipal Long memberId) {
+        return ResponseEntity.ok(chatService.getChatHistory(clubId, memberId));
     }
 
     /**

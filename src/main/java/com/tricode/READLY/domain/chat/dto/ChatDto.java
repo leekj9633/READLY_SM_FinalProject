@@ -14,6 +14,16 @@ public class ChatDto {
             String content
     ) {}
 
+    // 채팅방 재입장 시 보여줄 지난 대화 한 건.
+    // Redis TTL이 7일이라 별도 기간 조건 없이 남아 있는 것이 곧 최근 7일치다.
+    public record HistoryItem(
+            String messageId,
+            Long memberId,
+            String senderName,
+            String content,
+            LocalDateTime createdAt
+    ) {}
+
     // AI 서버의 /api/meeting/assist 로 보낼 대화 개입 요청
     public record MeetingAssistRequest(
             Long clubId,
