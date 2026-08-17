@@ -2,6 +2,7 @@ package com.tricode.READLY.domain.book.controller;
 
 import com.tricode.READLY.domain.book.dto.BookDto;
 import com.tricode.READLY.domain.book.service.BookService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -34,10 +35,20 @@ public class BookController {
     }
 
     /**
-     * 기능: 책 등록하기 (외부 도서 API에서 검색한 책을 우리 DB에 저장)
+     * 기능: 제목으로 책 검색하기 (알라딘 ItemSearch).
+     * 검색 단계에서는 아무것도 저장하지 않는다. 응답의 isbn13을 그대로 등록 요청에 실어 보내면 된다.
+     */
+    @GetMapping("/search")
+    public ResponseEntity<List<BookDto.SearchResponse>> searchBooks(@RequestParam String keyword) {
+        return ResponseEntity.ok(bookService.searchBooks(keyword));
+    }
+
+    /**
+     * 기능: 책 등록하기 (검색 결과에서 고른 책을 우리 DB에 저장).
+     * 수기 입력은 받지 않으므로 요청 본문은 isbn13 하나뿐이고, 비어 있으면 400이다.
      */
     @PostMapping
-    public ResponseEntity<Long> registerBook(@RequestBody BookDto.CreateRequest request) {
+    public ResponseEntity<Long> registerBook(@Valid @RequestBody BookDto.CreateRequest request) {
         return ResponseEntity.ok(bookService.registerBook(request));
     }
 
