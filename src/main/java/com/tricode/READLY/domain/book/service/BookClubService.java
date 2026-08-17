@@ -47,9 +47,51 @@ public class BookClubService {
                     currentMemberCount,
                     club.getMemberCapacity(),
                     club.getStatus(),
-                    club.getType()
+                    club.getType(),
+                    null // 가입하지 않은 모임이 섞여 있어 목록에서는 역할을 계산하지 않는다
             );
         }).collect(Collectors.toList());
+    }
+
+    /**
+     * 방 입장 시 보여줄 독서모임 상세 정보. 가입한 회원만 조회할 수 있다.
+     * 응답의 role로 프론트가 방장 전용 UI 노출을 판단한다.
+     */
+    public BookClubDto.DetailResponse getBookClubDetail(Long clubId, Long memberId) {
+        if (!memberBookclubRepository.existsByMemberIdAndBookClubId(memberId, clubId)) {
+            throw new IllegalStateException("가입하지 않은 독서모임입니다.");
+        }
+
+        BookClub club = bookClubRepository.findByIdWithBook(clubId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 독서모임입니다."));
+        Book book = club.getBook();
+        Long hostId = getHostId(club);
+
+        return new BookClubDto.DetailResponse(
+                club.getId(),
+                club.getName(),
+                book != null ? book.getId() : null,
+                book != null ? book.getName() : null,
+                book != null ? book.getCoverImageUrl() : null,
+                club.getCreationDate(),
+                club.getCreationTime(),
+                memberBookclubRepository.countByBookClubId(clubId),
+                club.getMemberCapacity(),
+                club.getStatus(),
+                club.getType(),
+                hostId,
+                resolveRole(hostId, memberId)
+        );
+    }
+
+    // host는 LAZY 프록시지만 getId()는 추가 쿼리 없이 읽힌다.
+    // 백필 전에 만들어진 모임은 방장이 비어 있을 수 있다.
+    private Long getHostId(BookClub club) {
+        return club.getHost() != null ? club.getHost().getId() : null;
+    }
+
+    private BookClubDto.ClubRole resolveRole(Long hostId, Long memberId) {
+        return memberId.equals(hostId) ? BookClubDto.ClubRole.HOST : BookClubDto.ClubRole.PARTICIPANT;
     }
 
     /**
@@ -57,14 +99,23 @@ public class BookClubService {
      */
     @Transactional
     public Long createBookClub(Long memberId, BookClubDto.CreateRequest request) {
+        // 독서모임은 어떤 책을 읽을지 반드시 정해야 만들 수 있다.
+        // null을 그대로 findById에 넘기면 스프링이 InvalidDataAccessApiUsageException으로 감싸
+        // 400이 아니라 500으로 나가므로, 여기서 먼저 걸러낸다.
+        if (request.bookId() == null) {
+            throw new IllegalArgumentException("독서모임을 만들려면 책을 선택해야 합니다.");
+        }
+
         Book book = bookRepository.findById(request.bookId())
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 책입니다."));
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new IllegalArgumentException("회원을 찾을 수 없습니다."));
 
+        // 모임을 만든 사람이 곧 방장이다. 가입 순서에 기대지 않고 컬럼에 명시해 둔다.
         BookClub bookClub = BookClub.builder()
                 .name(request.name())
                 .book(book)
+                .host(member)
                 .creationDate(request.date())
                 .creationTime(request.time())
                 .memberCapacity(request.maxCapacity())
@@ -127,7 +178,8 @@ public class BookClubService {
                             memberBookclubRepository.countByBookClubId(club.getId()),
                             club.getMemberCapacity(),
                             club.getStatus(),
-                            club.getType()
+                            club.getType(),
+                            resolveRole(getHostId(club), memberId) // 전부 내가 가입한 모임이라 역할을 정할 수 있다
                     );
                 })
                 .collect(Collectors.toList());
