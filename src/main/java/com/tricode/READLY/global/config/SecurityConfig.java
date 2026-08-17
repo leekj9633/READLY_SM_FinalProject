@@ -40,6 +40,11 @@ public class SecurityConfig {
                         .requestMatchers("/api/members/signup", "/api/members/login").permitAll()
                         // AI 에이전트가 콜백으로 호출하는 엔드포인트 (AI 서버는 회원 JWT를 가지고 있지 않음)
                         .requestMatchers(HttpMethod.POST, "/api/book-clubs/*/chats").permitAll()
+                        // 웹소켓 핸드셰이크는 인증에서 제외한다.
+                        // 브라우저의 WebSocket/SockJS는 핸드셰이크 요청에 Authorization 헤더를 넣을 수 없다.
+                        // 대신 StompAuthChannelInterceptor가 CONNECT 프레임에서 JWT를 검증한다.
+                        // SockJS는 /ws/chat/info, /ws/chat/{server}/{session}/websocket 등 하위 경로를 쓰므로 /** 가 필요하다.
+                        .requestMatchers("/ws/chat/**").permitAll()
                         // 그 외의 모든 요청은 인증(토큰)이 필요하도록 설정
                         .anyRequest().authenticated()
                 )
