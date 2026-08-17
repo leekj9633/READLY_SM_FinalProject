@@ -43,6 +43,9 @@ public class ChatConsumer {
         }
     }
 
+    // 여기는 Kafka 리스너에서 도는 비동기 경로라 사용자에게 돌려줄 응답이 없다.
+    // 이미 Redis 저장과 브로드캐스트는 끝난 뒤이므로, AI 전달 실패는 로그만 남기고 삼킨다.
+    // (사용자가 직접 호출하는 ChatService의 assist 경로는 반대로 503을 던진다)
     private void sendToAiAgent(ChatMessage message) {
         try {
             HttpHeaders headers = new HttpHeaders();
