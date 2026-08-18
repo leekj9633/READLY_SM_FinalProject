@@ -36,7 +36,7 @@ spring:
 # confluent 사용을 위한 설정
 kafka:
   # 브로커 주소 (Render 환경변수 주입, 없으면 로컬)
-  bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+  bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
 
   # 추가된 Confluent Cloud 보안 설정
   properties:
