@@ -17,8 +17,11 @@ spring:
 
   data:
     redis:
-      host: localhost
-      port: 6379
+      # Render 환경변수 주입 (로컬에서는 localhost로 동작)
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      # Render Redis에 비밀번호가 설정되어 있을 경우를 대비
+      password: ${REDIS_PASSWORD:}
 
 # confluent 사용 전 설정
 #  kafka:
