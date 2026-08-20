@@ -25,7 +25,7 @@
 
 ### 채팅 파이프라인
 
-메시지는 STOMP 또는 REST(AI 콜백)로 들어와 Kafka(`chat-group`)에 발행되고, 컨슈머가 Redis에 저장(7일 TTL) 후 STOMP 구독자에게 브로드캐스트하며 동시에 외부 AI 서버로 전달한다. 자세한 흐름과 인증 방식은 [`docs/api-spec.md`](docs/api-spec.md)의 "5. 채팅" 항목 참고.
+메시지는 STOMP 또는 REST(AI 콜백)로 들어와 Kafka(`chat-group`)에 발행되고, 컨슈머가 Redis에 저장(7일 TTL) 후 STOMP 구독자에게 브로드캐스트하며 동시에 외부 AI 서버로 전달한다.
 
 ### 인증
 
@@ -88,7 +88,4 @@ copy src\main\resources\application-local.yaml.example src\main\resources\applic
 
 ## 문서
 
-- [`docs/api-spec.md`](docs/api-spec.md) — 전체 API 명세 (엔드포인트별 요청/응답/에러)
-- [`docs/fe-be-endpoint-mismatch.md`](docs/fe-be-endpoint-mismatch.md) — 프론트엔드(`develop` 브랜치)와의 엔드포인트 대조 결과
-- [`docs/known-issues.md`](docs/known-issues.md) — 해결/미해결 이슈와 다음 세션에서 할 일
 - `db/*.sql` — 스키마 변경에 따른 수동 백필 스크립트 (Flyway/Liquibase 미사용)
