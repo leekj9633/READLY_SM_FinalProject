@@ -70,26 +70,19 @@ public class ChatController {
     }
 
     /**
-     * 해당 북클럽의 최근 대화(Redis)를 모아 AI에게 개입(assist)을 요청하는 REST API
+     * 모임장 전용 AI 진행자 개입 버튼.
+     * 최근 대화와 책 제목을 AI 서버로 보내고, 응답을 AI 이름으로 채팅방에 바로 발행한다.
+     * 응답 본문이 없는 이유는 결과가 STOMP 구독으로 도착하기 때문이다.
+     *
+     * AI를 호출하는 엔드포인트는 이것 하나뿐이다.
+     * 예전에 있던 방장용 /ai-assist는 이 경로와 하는 일이 같아 삭제했다(known-issues #11).
      */
     @PostMapping("/api/book-clubs/{clubId}/meeting/assist")
     public ResponseEntity<Void> requestMeetingAssist(
             @PathVariable Long clubId,
-            @AuthenticationPrincipal Long memberId) {
-        chatService.requestMeetingAssist(clubId, memberId);
-        return ResponseEntity.ok().build();
-    }
-
-    /**
-     * 모임장 전용 AI 진행자 개입 버튼.
-     * 최근 대화를 AI 서버로 보내고, 응답을 AI 이름으로 채팅방에 바로 발행한다.
-     */
-    @PostMapping("/api/book-clubs/{clubId}/ai-assist")
-    public ResponseEntity<Void> requestAiAssist(
-            @PathVariable Long clubId,
             @AuthenticationPrincipal Long memberId,
-            @RequestBody ChatDto.AiAssistRequest request) {
-        chatService.requestAiAssist(clubId, memberId, request.mode());
+            @RequestBody ChatDto.MeetingAssistRequest request) {
+        chatService.requestMeetingAssist(clubId, memberId, request.mode());
         return ResponseEntity.ok().build();
     }
 }

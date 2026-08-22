@@ -24,20 +24,8 @@ public class ChatDto {
             LocalDateTime createdAt
     ) {}
 
-    // AI 서버의 /api/meeting/assist 로 보낼 대화 개입 요청
+    // 모임장이 AI 진행자 개입 버튼을 누를 때 보내는 요청 (POST /api/book-clubs/{clubId}/meeting/assist)
     public record MeetingAssistRequest(
-            Long clubId,
-            List<ChatLog> messages
-    ) {}
-
-    public record ChatLog(
-            Long memberId,
-            String content,
-            LocalDateTime createdAt
-    ) {}
-
-    // 모임장이 AI 진행자 개입 버튼을 누를 때 보내는 요청
-    public record AiAssistRequest(
             String mode // "question"(토론 질문 제안) 또는 "summary"(대화 요약)
     ) {}
 
