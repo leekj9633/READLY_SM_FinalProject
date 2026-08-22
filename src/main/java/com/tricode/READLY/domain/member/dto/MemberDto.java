@@ -34,14 +34,27 @@ public class MemberDto {
             String introduction
     ) {}
 
-    // 프로필 정보 응답 (공통)
+    // 내 프로필 응답 (GET /api/members/me)
+    // followerCount/followingCount는 Member의 카운터 컬럼이 아니라 Follow 행을 실제로 세어 채운다.
+    // 카운터는 팔로우 시점에만 증가시켜 온 값이라 과거 데이터가 어긋나 있을 수 있기 때문이다.
     public record ProfileResponse(
             Long memberId,
             String nickname,
             String email,
             String introduction,
-            int followerCount,
-            int followingCount
+            long followerCount,
+            long followingCount
+    ) {}
+
+    // 타인 프로필 응답 (GET /api/members/{memberId})
+    // 남의 이메일은 내려주지 않는다. isFollowing으로 프론트가 팔로우 버튼 상태를 정확히 그릴 수 있다.
+    public record OtherProfileResponse(
+            Long memberId,
+            String nickname,
+            String introduction,
+            long followerCount,
+            long followingCount,
+            boolean isFollowing
     ) {}
 
 }

@@ -29,6 +29,22 @@ public class MemberController {
         return ResponseEntity.ok(memberService.login(request));
     }
 
+    // 마이페이지: 내 프로필 조회
+    // "/me"는 리터럴이라 아래 "/{memberId}" 매핑보다 먼저 매칭된다
+    @GetMapping("/me")
+    public ResponseEntity<MemberDto.ProfileResponse> getMyProfile(
+            @AuthenticationPrincipal Long memberId) {
+        return ResponseEntity.ok(memberService.getMyProfile(memberId));
+    }
+
+    // 다른 회원의 프로필 조회 (이메일은 내려주지 않고, 내가 팔로우 중인지 여부를 함께 준다)
+    @GetMapping("/{memberId}")
+    public ResponseEntity<MemberDto.OtherProfileResponse> getOtherProfile(
+            @PathVariable Long memberId,
+            @AuthenticationPrincipal Long myMemberId) {
+        return ResponseEntity.ok(memberService.getOtherProfile(memberId, myMemberId));
+    }
+
     // [기능 4] 팔로워 목록 (나를 팔로우 하는 사람)
     @GetMapping("/{memberId}/followers")
     public ResponseEntity<List<MemberDto.FollowListResponse>> getFollowers(@PathVariable Long memberId) {
@@ -48,6 +64,15 @@ public class MemberController {
             @PathVariable Long followingId,
             @AuthenticationPrincipal Long myMemberId) {
         memberService.followUser(myMemberId, followingId);
+        return ResponseEntity.ok().build();
+    }
+
+    // 팔로우 취소 (팔로우와 같은 경로, 메서드만 DELETE)
+    @DeleteMapping("/{followingId}/follow")
+    public ResponseEntity<Void> unfollowUser(
+            @PathVariable Long followingId,
+            @AuthenticationPrincipal Long myMemberId) {
+        memberService.unfollowUser(myMemberId, followingId);
         return ResponseEntity.ok().build();
     }
 

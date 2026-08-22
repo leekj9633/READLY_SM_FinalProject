@@ -64,5 +64,18 @@ public class Member {
     public void increaseFollowerCount() {
         this.followerCount++;
     }
+
+    // 언팔로우 시 감소. 과거 데이터가 어긋나 있을 수 있어 음수로 내려가지 않게 막는다
+    public void decreaseFollowingCount() {
+        if (this.followingCount > 0) {
+            this.followingCount--;
+        }
+    }
+
+    public void decreaseFollowerCount() {
+        if (this.followerCount > 0) {
+            this.followerCount--;
+        }
+    }
 }
 
