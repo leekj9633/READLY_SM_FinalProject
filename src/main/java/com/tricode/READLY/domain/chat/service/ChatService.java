@@ -74,47 +74,38 @@ public class ChatService {
         Map<Long, String> memberNames = resolveMemberNames(messages);
 
         return messages.stream()
-                .map(message -> new ChatDto.HistoryItem(
-                        message.getId(),
-                        message.getMemberId(),
-                        resolveSpeaker(message.getMemberId(), memberNames),
-                        message.getContent(),
-                        message.getCreatedAt()))
+                .map(message -> toHistoryItem(message, memberNames))
                 .toList();
     }
 
     /**
-     * 해당 북클럽의 최근 대화(Redis)를 모아 AI 서버에 개입(assist)을 요청
+     * 메시지 한 건을 이력 조회와 똑같은 응답 형식으로 바꾼다.
+     * ChatConsumer가 실시간 브로드캐스트에 쓴다. 두 경로의 형식이 갈리면
+     * 프론트에서 실시간 메시지만 보낸 사람 이름이 비는 문제가 생긴다.
      */
-    public void requestMeetingAssist(Long clubId, Long memberId) {
-        validateClubMember(clubId, memberId);
+    public ChatDto.HistoryItem toHistoryItem(ChatMessage message) {
+        return toHistoryItem(message, resolveMemberNames(List.of(message)));
+    }
 
-        List<ChatMessage> messages = getRecentMessages(clubId);
-        List<ChatDto.ChatLog> recentLogs = messages.stream()
-                .map(message -> new ChatDto.ChatLog(message.getMemberId(), message.getContent(), message.getCreatedAt()))
-                .toList();
-
-        ChatDto.MeetingAssistRequest requestBody = new ChatDto.MeetingAssistRequest(clubId, recentLogs);
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        HttpEntity<ChatDto.MeetingAssistRequest> requestEntity = new HttpEntity<>(requestBody, headers);
-
-        // 사용자가 직접 요청한 동기 경로다. 실패를 삼키고 200을 주면
-        // 프론트가 성공한 것으로 표시하므로, 예외로 올려 503으로 응답한다.
-        try {
-            restTemplate.postForEntity(aiBaseUrl + "/api/meeting/assist", requestEntity, String.class);
-            log.info("AI 에이전트에게 대화 개입 요청 성공 (clubId: {}, messageCount: {})", clubId, recentLogs.size());
-        } catch (RestClientException e) {
-            throw new AiServerException("대화 개입 요청 실패 (clubId: " + clubId + ")", e);
-        }
+    // 응답 조립은 이 한 곳에만 둔다 (목록 조회와 단건 브로드캐스트가 공유)
+    private ChatDto.HistoryItem toHistoryItem(ChatMessage message, Map<Long, String> memberNames) {
+        return new ChatDto.HistoryItem(
+                message.getId(),
+                message.getMemberId(),
+                resolveSpeaker(message.getMemberId(), memberNames),
+                message.getContent(),
+                message.getCreatedAt());
     }
 
     /**
      * 모임장 전용: AI 진행자 개입 버튼.
      * 최근 대화(Redis)와 책 제목을 AI 서버에 보내고, 받은 응답을 AI 이름으로 채팅방에 바로 발행한다.
+     *
+     * AI 호출 경로는 이 메서드 하나뿐이다. 예전에는 참여자용(/meeting/assist)과 방장용(/ai-assist)이
+     * 나뉘어 있었는데, 같은 AI 엔드포인트를 서로 다른 형식으로 부르다가 참여자 경로가 계속 422로 실패했다.
+     * (known-issues #11)
      */
-    public void requestAiAssist(Long clubId, Long memberId, String mode) {
+    public void requestMeetingAssist(Long clubId, Long memberId, String mode) {
         BookClub bookClub = bookClubRepository.findByIdWithBook(clubId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 독서모임입니다."));
         validateClubHost(bookClub, memberId);
@@ -130,13 +121,15 @@ public class ChatService {
                         message.getContent()))
                 .toList();
 
+        // AI 서버가 요구하는 형식: { "book_title": ..., "chat_history": [{ "speaker", "text" }], "mode": ... }
         ChatDto.MeetingAssistApiRequest requestBody = new ChatDto.MeetingAssistApiRequest(bookTitle, chatHistory, mode);
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         HttpEntity<ChatDto.MeetingAssistApiRequest> requestEntity = new HttpEntity<>(requestBody, headers);
 
-        // requestMeetingAssist와 동일하게, 실패는 조용히 넘기지 않고 503으로 알린다
+        // 사용자가 버튼을 눌러 발생한 동기 요청이다. 실패를 삼키고 200을 주면
+        // 프론트가 성공한 것으로 표시하므로, 예외로 올려 503으로 응답한다.
         ChatDto.MeetingAssistApiResponse response;
         try {
             response = restTemplate.postForObject(

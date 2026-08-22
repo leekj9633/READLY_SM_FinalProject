@@ -22,6 +22,7 @@ public class ChatConsumer {
     private final RestTemplate restTemplate;
     private final ChatMessageRepository chatMessageRepository;
     private final SimpMessageSendingOperations messagingTemplate; // 추가됨: STOMP 브로드캐스팅 객체
+    private final ChatService chatService; // 브로드캐스트 형식을 이력 조회와 맞추기 위해 응답 변환을 빌려 쓴다
 
     @Value("${ai.base-url}")
     private String aiBaseUrl;
@@ -34,8 +35,11 @@ public class ChatConsumer {
         chatMessageRepository.save(message);
 
         // 2. WebSocket 구독자들에게 실시간 브로드캐스팅 (필수!)
-        // "/sub/chat/clubs/{clubId}" 를 구독하고 있는 클라이언트들에게 메시지 전송
-        messagingTemplate.convertAndSend("/sub/chat/clubs/" + message.getClubId(), message);
+        // "/sub/chat/clubs/{clubId}" 를 구독하고 있는 클라이언트들에게 메시지 전송.
+        // 엔티티를 그대로 보내면 messageId/senderName이 없어 이력 조회(GET .../chats) 응답과 형식이 달라지므로
+        // 반드시 HistoryItem으로 바꿔서 보낸다. 프론트는 두 경로를 같은 코드로 처리한다.
+        messagingTemplate.convertAndSend(
+                "/sub/chat/clubs/" + message.getClubId(), chatService.toHistoryItem(message));
 
         // 3. AI 에이전트에게 메시지 전달 (AI가 보낸 메시지가 아닐 때만)
         if (!ChatService.AI_MEMBER_ID.equals(message.getMemberId())) {
