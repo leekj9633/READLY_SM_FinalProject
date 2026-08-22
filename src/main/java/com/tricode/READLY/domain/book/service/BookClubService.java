@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -29,8 +30,14 @@ public class BookClubService {
     /**
      * 기능 2: 홈화면에서 독서모임의 상세 정보 보기
      */
-    public List<BookClubDto.HomeListResponse> getHomeBookClubs() {
+    public List<BookClubDto.HomeListResponse> getHomeBookClubs(Long memberId) {
         List<BookClub> clubs = bookClubRepository.findAllWithBook();
+
+        // 내가 가입한 모임의 id를 쿼리 한 번으로 모아 둔다.
+        // 모임마다 가입 여부를 확인하면 쿼리가 모임 수만큼 늘어나므로 이렇게 미리 만든다.
+        Set<Long> joinedClubIds = memberBookclubRepository.findAllByMemberIdWithBookClub(memberId).stream()
+                .map(memberBookClub -> memberBookClub.getBookClub().getId())
+                .collect(Collectors.toSet());
 
         return clubs.stream().map(club -> {
             int currentMemberCount = memberBookclubRepository.countByBookClubId(club.getId());
@@ -48,7 +55,9 @@ public class BookClubService {
                     club.getMemberCapacity(),
                     club.getStatus(),
                     club.getType(),
-                    null // 가입하지 않은 모임이 섞여 있어 목록에서는 역할을 계산하지 않는다
+                    // 가입한 모임만 실제 역할을 채우고, 가입하지 않은 모임은 null로 둔다.
+                    // 프론트가 이 값으로 입장 전 join 호출 여부를 판단한다.
+                    joinedClubIds.contains(club.getId()) ? resolveRole(getHostId(club), memberId) : null
             );
         }).collect(Collectors.toList());
     }

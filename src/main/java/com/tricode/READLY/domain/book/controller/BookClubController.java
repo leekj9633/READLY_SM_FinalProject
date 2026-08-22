@@ -17,11 +17,14 @@ public class BookClubController {
     private final BookClubService bookClubService;
 
     /**
-     * 기능: 홈화면에서 독서모임 정보 리스트 보기
+     * 기능: 홈화면에서 독서모임 정보 리스트 보기.
+     * 가입하지 않은 모임도 함께 내려가며, role은 내가 가입한 모임에만 값이 들어간다.
+     * 프론트가 이 값으로 "가입 여부"를 판단해 입장 전에 join을 호출할지 정한다.
      */
     @GetMapping
-    public ResponseEntity<List<BookClubDto.HomeListResponse>> getHomeBookClubs() {
-        return ResponseEntity.ok(bookClubService.getHomeBookClubs());
+    public ResponseEntity<List<BookClubDto.HomeListResponse>> getHomeBookClubs(
+            @AuthenticationPrincipal Long memberId) {
+        return ResponseEntity.ok(bookClubService.getHomeBookClubs(memberId));
     }
 
     /**
