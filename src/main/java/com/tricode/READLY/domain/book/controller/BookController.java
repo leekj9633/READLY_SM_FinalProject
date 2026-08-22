@@ -35,6 +35,16 @@ public class BookController {
     }
 
     /**
+     * 기능: 다른 회원의 프로필에서 그 사람이 읽은 책 목록 확인하기.
+     * 응답 형식은 내 목록(/my-list)과 같고, 조회 대상만 다르다.
+     */
+    @GetMapping("/members/{memberId}/list")
+    public ResponseEntity<List<BookDto.MyListResponse>> getMemberReadBooks(
+            @PathVariable Long memberId) {
+        return ResponseEntity.ok(bookService.getMyReadBooks(memberId));
+    }
+
+    /**
      * 기능: 제목으로 책 검색하기 (알라딘 ItemSearch).
      * 검색 단계에서는 아무것도 저장하지 않는다. 응답의 isbn13을 그대로 등록 요청에 실어 보내면 된다.
      */

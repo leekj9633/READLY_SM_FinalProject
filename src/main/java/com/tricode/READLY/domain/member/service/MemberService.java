@@ -65,6 +65,41 @@ public class MemberService {
     }
 
     /**
+     * 내 프로필 조회 (마이페이지)
+     */
+    public MemberDto.ProfileResponse getMyProfile(Long memberId) {
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new IllegalArgumentException("회원을 찾을 수 없습니다."));
+
+        return new MemberDto.ProfileResponse(
+                member.getId(),
+                member.getNickname(),
+                member.getEmail(),
+                member.getIntroduction(),
+                followRepository.countByFollowingId(memberId),
+                followRepository.countByFollowerId(memberId)
+        );
+    }
+
+    /**
+     * 다른 회원의 프로필 조회.
+     * 이메일은 내려주지 않고, 대신 요청한 회원이 이미 팔로우 중인지를 함께 알려준다.
+     */
+    public MemberDto.OtherProfileResponse getOtherProfile(Long targetMemberId, Long myMemberId) {
+        Member member = memberRepository.findById(targetMemberId)
+                .orElseThrow(() -> new IllegalArgumentException("회원을 찾을 수 없습니다."));
+
+        return new MemberDto.OtherProfileResponse(
+                member.getId(),
+                member.getNickname(),
+                member.getIntroduction(),
+                followRepository.countByFollowingId(targetMemberId),
+                followRepository.countByFollowerId(targetMemberId),
+                followRepository.existsByFollowerIdAndFollowingId(myMemberId, targetMemberId)
+        );
+    }
+
+    /**
      * 팔로워 목록 확인 (나를 팔로우 하는 사람)
      */
     public List<MemberDto.FollowListResponse> getFollowers(Long memberId) {
@@ -115,6 +150,28 @@ public class MemberService {
         // 양쪽 카운터 갱신 (더티 체킹)
         follower.increaseFollowingCount();
         following.increaseFollowerCount();
+    }
+
+    /**
+     * 팔로우 취소하기.
+     * 팔로우와 마찬가지로 취소하는 주체는 파라미터가 아니라 토큰에서 온다.
+     */
+    @Transactional
+    public void unfollowUser(Long followerId, Long followingId) {
+        Follow follow = followRepository.findByFollowerIdAndFollowingId(followerId, followingId)
+                .orElseThrow(() -> new IllegalStateException("팔로우하지 않은 사용자입니다."));
+
+        followRepository.delete(follow);
+
+        // 양쪽 카운터 갱신 (더티 체킹). 프로필 응답은 실제 행을 세지만,
+        // 카운터 컬럼도 계속 유지해 두 값이 더 벌어지지 않게 한다.
+        Member follower = memberRepository.findById(followerId)
+                .orElseThrow(() -> new IllegalArgumentException("회원을 찾을 수 없습니다."));
+        Member following = memberRepository.findById(followingId)
+                .orElseThrow(() -> new IllegalArgumentException("팔로우를 취소할 회원을 찾을 수 없습니다."));
+
+        follower.decreaseFollowingCount();
+        following.decreaseFollowerCount();
     }
 
     /**
