@@ -48,8 +48,12 @@ public class BookController {
      * 기능: 제목으로 책 검색하기 (알라딘 ItemSearch).
      * 검색 단계에서는 아무것도 저장하지 않는다. 응답의 isbn13을 그대로 등록 요청에 실어 보내면 된다.
      */
+    // keyword를 required=false로 받는 이유: 필수로 두면 파라미터 자체가 빠졌을 때
+    // MissingServletRequestParameterException이 나고, 전용 핸들러가 없어 500으로 나간다.
+    // null을 그대로 서비스로 넘겨 빈 검색어와 같은 400("검색어를 입력해 주세요.")으로 통일한다.
     @GetMapping("/search")
-    public ResponseEntity<List<BookDto.SearchResponse>> searchBooks(@RequestParam String keyword) {
+    public ResponseEntity<List<BookDto.SearchResponse>> searchBooks(
+            @RequestParam(required = false) String keyword) {
         return ResponseEntity.ok(bookService.searchBooks(keyword));
     }
 
