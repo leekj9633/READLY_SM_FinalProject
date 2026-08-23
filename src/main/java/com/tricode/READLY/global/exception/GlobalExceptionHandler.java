@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.client.RestClientException;
 
 import java.util.stream.Collectors;
 
@@ -54,6 +55,16 @@ public class GlobalExceptionHandler {
         log.error("AI 서버 호출 실패: {}", e.getMessage(), e);
         return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
                 .body(new ErrorResponse("AI 서버에 연결할 수 없습니다. 잠시 후 다시 시도해 주세요."));
+    }
+
+    // 외부 API 호출 자체가 실패한 경우 (알라딘 연결 거부·타임아웃 등).
+    // AI 서버 호출은 AiServerException으로 감싸 던지므로 더 구체적인 위 핸들러가 먼저 잡는다.
+    // 이 핸들러가 없으면 우리 서버 잘못이 아닌데도 500으로 나간다.
+    @ExceptionHandler(RestClientException.class)
+    public ResponseEntity<ErrorResponse> handleRestClient(RestClientException e) {
+        log.error("외부 API 호출 실패: {}", e.getMessage(), e);
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
+                .body(new ErrorResponse("외부 서비스에 연결할 수 없습니다. 잠시 후 다시 시도해 주세요."));
     }
 
     // 그 외 예상하지 못한 예외는 내부 메시지를 노출하지 않는다

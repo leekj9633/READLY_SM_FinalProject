@@ -1,17 +1,31 @@
 package com.tricode.READLY.domain.member.dto;
 
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+
 public class MemberDto {
 
     // 회원가입 요청
+    // 검증이 없으면 값이 비어 있을 때 DB NOT NULL 제약에 걸려 500으로 나간다.
+    // 사용자 잘못은 400으로 돌려주고 어떤 필드가 문제인지 알려준다.
     public record SignUpRequest(
+            @NotBlank(message = "아이디는 필수입니다.")
             String loginId,
+
+            @NotBlank(message = "이메일은 필수입니다.")
+            @Email(message = "이메일 형식이 올바르지 않습니다.")
             String email,
+
+            @NotBlank(message = "비밀번호는 필수입니다.")
             String password
     ) {}
 
     // 로그인 요청
     public record LoginRequest(
+            @NotBlank(message = "이메일은 필수입니다.")
             String email,
+
+            @NotBlank(message = "비밀번호는 필수입니다.")
             String password
     ) {}
 

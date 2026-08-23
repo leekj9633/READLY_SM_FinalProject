@@ -2,6 +2,7 @@ package com.tricode.READLY.domain.member.controller;
 
 import com.tricode.READLY.domain.member.dto.MemberDto;
 import com.tricode.READLY.domain.member.service.MemberService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -18,13 +19,13 @@ public class MemberController {
 
     // [기능 2] 회원가입
     @PostMapping("/signup")
-    public ResponseEntity<Long> signUp(@RequestBody MemberDto.SignUpRequest request) {
+    public ResponseEntity<Long> signUp(@Valid @RequestBody MemberDto.SignUpRequest request) {
         return ResponseEntity.ok(memberService.signUp(request));
     }
 
     // [기능 3] 로그인
     @PostMapping("/login")
-    public ResponseEntity<MemberDto.TokenResponse> login(@RequestBody MemberDto.LoginRequest request) {
+    public ResponseEntity<MemberDto.TokenResponse> login(@Valid @RequestBody MemberDto.LoginRequest request) {
         // 성공 시 200 OK와 함께 { "memberId": 1, "accessToken": "eyJhbGci..." } 형태의 JSON이 반환
         return ResponseEntity.ok(memberService.login(request));
     }
