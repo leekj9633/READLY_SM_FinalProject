@@ -52,6 +52,7 @@ jobs:
             docker rm spring-app || true
             docker run -d \
               --name spring-app \
+              --restart unless-stopped \
               --net="host" \
               -e DB_URL=jdbc:postgresql://localhost:5432/mydb \
               -e DB_USERNAME=myuser \
