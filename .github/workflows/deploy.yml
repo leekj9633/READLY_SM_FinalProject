@@ -56,6 +56,4 @@ jobs:
               -e DB_PASSWORD=${{ secrets.DB_PASSWORD }} \
               -e JWT_SECRET=${{ secrets.JWT_SECRET }} \
               -e ALADIN_TTB_KEY=${{ secrets.ALADIN_TTB_KEY }} \
-#              -e CORS_ALLOWED_ORIGINS=${{ secrets.CORS_ALLOWED_ORIGINS }} \
-#              -e AI_BASE_URL=${{ secrets.AI_BASE_URL }} \
               ${{ secrets.DOCKER_USERNAME }}/my-spring-app:latest
