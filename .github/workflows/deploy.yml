@@ -53,6 +53,8 @@ jobs:
             docker run -d \
               --name spring-app \
               --net="host" \
+              -e DB_URL=jdbc:postgresql://localhost:5432/mydb \
+              -e DB_USERNAME=myuser \
               -e DB_PASSWORD=${{ secrets.DB_PASSWORD }} \
               -e JWT_SECRET=${{ secrets.JWT_SECRET }} \
               -e ALADIN_TTB_KEY=${{ secrets.ALADIN_TTB_KEY }} \
