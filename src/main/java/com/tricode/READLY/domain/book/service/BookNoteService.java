@@ -4,6 +4,8 @@ import com.tricode.READLY.domain.book.dto.BookNoteDto;
 import com.tricode.READLY.domain.book.entity.AINote;
 import com.tricode.READLY.domain.book.entity.Book;
 import com.tricode.READLY.domain.book.entity.BookNote;
+import com.tricode.READLY.domain.book.entity.MemberBook;
+import com.tricode.READLY.domain.book.repository.MemberBookRepository;
 import com.tricode.READLY.domain.book.repository.AINoteRepository;
 import com.tricode.READLY.domain.book.repository.BookRepository;
 import com.tricode.READLY.domain.book.repository.BookNoteRepository;
@@ -34,6 +36,7 @@ public class BookNoteService {
     private final AINoteRepository aiNoteRepository;
     private final BookRepository bookRepository;
     private final MemberRepository memberRepository;
+    private final MemberBookRepository memberBookRepository;
     // AI 전용 RestTemplate (타임아웃이 긴 빈). 필드 이름으로 주입 대상이 정해진다 - RestTemplateConfig 참고
     private final RestTemplate aiRestTemplate;
 
@@ -50,6 +53,14 @@ public class BookNoteService {
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 책입니다."));
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new IllegalArgumentException("회원을 찾을 수 없습니다."));
+
+        // 독서록을 남긴 책은 자동으로 내 책장에 담는다
+        if (!memberBookRepository.existsByMemberIdAndBookId(memberId, bookId)) {
+        memberBookRepository.save(MemberBook.builder()
+                .member(member)
+                .book(book)
+                .build());
+        }
 
         BookNote bookNote = BookNote.builder()
                 .book(book)
