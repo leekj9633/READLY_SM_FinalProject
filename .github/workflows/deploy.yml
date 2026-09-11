@@ -61,4 +61,5 @@ jobs:
               -e ALADIN_TTB_KEY=${{ secrets.ALADIN_TTB_KEY }} \
               -e CORS_ALLOWED_ORIGINS="${{ secrets.CORS_ALLOWED_ORIGINS }}" \
               -e AI_BASE_URL=${{ secrets.AI_BASE_URL }} \
+              -e AI_API_KEY=${{ secrets.AI_API_KEY }} \
               ${{ secrets.DOCKER_USERNAME }}/my-spring-app:latest
