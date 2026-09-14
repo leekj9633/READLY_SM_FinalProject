@@ -155,6 +155,12 @@ public class BookNoteService {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.set("X-AI-API-KEY", aiApiKey); // AI 서버 필수 헤더. 없으면 401이 돌아온다
+        // TODO 임시 진단 로그: AI 담당자와 키 일치 여부 확인용. 원인을 찾으면 삭제한다.
+        //      키 원문이 docker logs에 남지 않도록 길이와 앞뒤 2글자만 찍는다.
+        String sentKey = headers.getFirst("X-AI-API-KEY");
+        log.info("AI API KEY 길이={}, 앞뒤={}...{}", sentKey == null ? null : sentKey.length(),
+                sentKey == null ? null : sentKey.substring(0, Math.min(2, sentKey.length())),
+                sentKey == null ? null : sentKey.substring(Math.max(0, sentKey.length() - 2)));
         HttpEntity<BookNoteDto.ReviewGenerateRequest> requestEntity =
                 new HttpEntity<>(new BookNoteDto.ReviewGenerateRequest(bookTitle, noteItems), headers);
 
