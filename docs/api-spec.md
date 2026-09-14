@@ -682,12 +682,35 @@
 
 ---
 
+### [GET] /api/notes/books/{bookId}/members/{memberId}/ai-note
+
+- 설명: **다른 회원**이 그 책에 쓴 AI 독서록 조회 (타인 프로필 화면용)
+- 인증: 필요 (로그인만 하면 되고, 팔로우 여부는 보지 않는다 — AI 독서록은 공개 정보)
+- 응답 형식은 위 `GET /api/notes/books/{bookId}/ai-note`와 완전히 동일하다
+- 그 회원이 아직 만들지 않았으면 `exists: false`로 200 응답
+
+**Path Parameters**
+
+| 필드명 | 타입 | 필수 | 설명 |
+| --- | --- | --- | --- |
+| bookId | Long | Y | 책 id |
+| memberId | Long | Y | 독서록을 쓴 회원 id |
+
+```json
+{ "exists": true, "aiNoteId": 3, "content": "이 책은...", "tags": ["성장", "고전"], "edited": false }
+```
+
+> 400: `"회원을 찾을 수 없습니다."` — 없는 `memberId`
+
+---
+
 ### [POST] /api/notes/books/{bookId}/ai-generate
 
 - 설명: 그 책에 대한 내 독서록들을 취합해 AI 독후감 생성 요청
 - 인증: 필요
 - 요청 본문은 없다
 - 이미 AI 독서록이 있으면 새로 만들지 않고 **내용을 덮어쓴다.** 이때 회원이 수정했던 본문은 사라지고 `edited`가 false로 돌아간다
+- 내부적으로 AI 서버를 **두 번** 호출한다. 독후감 본문(`/api/review/generate`)을 받은 뒤, 그 본문을 다시 보내 감정 태그(`/api/analysis/emotion-tags`)를 받아 함께 저장한다. 태그 호출만 실패하면 본문은 그대로 저장되고 `tags`만 `[]`로 나간다
 
 **Response Body**: 생성된(또는 갱신된) `aiNoteId` (순수 숫자)
 

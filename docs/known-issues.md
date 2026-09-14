@@ -1161,3 +1161,52 @@ if (status === "FULL") return "모집완료";
 ```
 
 없으면 문자열 `"FULL"`이 뱃지에 그대로 노출된다(`statusLabel`의 마지막 `return status`).
+
+---
+
+# 2026-09-13 AI 연동 3건 (남 프로필 독후감 / API 키 헤더 / 감정 태그)
+
+## 22. 감정 태그는 `/api/analysis/emotion-tags`를 따로 불러야 한다
+
+- 위치: `domain/book/service/BookNoteService.generateAiBookNote`
+- 그동안 `ai_note.tags`가 항상 비어 있던 이유(21번 끝부분의 "남은 사실")가 확인됐다.
+  `/api/review/generate`는 **원래부터 태그를 주지 않는 경로**다. 우리가 응답에 `tags`가
+  딸려 올 것이라 가정하고 만들어 둔 것이고, AI 서버는 그렇게 만든 적이 없다.
+- 2026-09-13 AI 담당자가 알려준 실제 구성은 경로 세 개다.
+
+  | 경로 | 입력 | 출력 | 용도 |
+  | --- | --- | --- | --- |
+  | `/api/review/generate` | 구절·느낌 목록 | 독후감 본문 | "AI 독서록 생성" 버튼 |
+  | `/api/analysis/emotion-tags` | **생성된 독후감 본문** | 감정 태그(2~4글자) | 책장에서 책을 눌렀을 때 |
+  | `/api/preference/analyze` | 여러 독후감 | 취향 태그 + 한 줄 요약 | 마이페이지 성향 분석 |
+
+- 조치: `generateAiBookNote`를 2단계로 바꿨다. 1단계로 본문을 받고, 그 본문을 그대로
+  2단계(`analyzeEmotionTags`)에 넘겨 태그를 받아 `AINote`에 저장한다.
+  응답 형식(`tags[]`)은 그대로라 **프론트 변경은 없다.**
+- 실패 처리는 본문과 태그를 다르게 뒀다. 본문 실패는 503으로 올리고, 태그 실패는 로그만 남기고
+  태그 없이 저장한다(3번에서 정한 방침). 이미 받아 둔 독후감까지 버리는 것이 사용자에게 더 손해다.
+- `ReviewGenerateResponse.tags` 필드는 지우지 않고 남겨 뒀다. AI 서버가 나중에 함께 내려줘도 깨지지 않는다.
+- **미검증 2건 — AI 담당자에게 확인 필요:**
+  1. 요청 본문의 필드명. 지금은 `{ "review": "<본문>" }`로 보낸다. AI 서버가 `text` 같은 다른 이름을
+     기대하면 422가 나고, 그러면 태그만 조용히 비게 된다(위 실패 처리 때문에 사용자에겐 안 보인다).
+  2. 응답이 `{ "tags": [...] }` 형태인지.
+- 참고: `/api/preference/analyze`(마이페이지 성향 분석)는 **아직 구현하지 않았다.** 요구사항이 나오면 별도 작업이다.
+
+## 23. AI 서버로 나가는 요청에 `X-AI-API-KEY`가 없었다
+
+- 위치: `BookNoteService.generateReview`, `ChatService.requestMeetingAssist`, `ChatConsumer.sendToAiAgent`
+- AI 서버가 이 헤더를 필수로 요구하도록 바뀌었는데, 우리는 콜백을 **받을 때만** 이 키를 검사하고
+  **보낼 때는** 붙이지 않았다. 세 곳 모두 `@Value("${ai.api-key}")`를 주입해 헤더에 넣었다.
+- 진단을 어렵게 만든 지점: `AiServerException`이 잡는 `RestClientException`에는 연결 실패뿐 아니라
+  AI 서버가 돌려준 4xx/5xx도 들어온다. 그래서 **401을 받아도 화면에는 "AI 서버에 연결할 수 없습니다"**가 뜬다.
+  이 메시지를 네트워크 장애로 단정하면 안 된다. 실제 상태 코드는 `docker logs spring-app`에서 확인한다.
+- 미검증: 배포 환경에서 실제로 200이 오는지. 컴파일만 확인했다.
+
+## 24. 남의 AI 독후감 조회 엔드포인트 추가
+
+- 프론트 요청으로 `GET /api/notes/books/{bookId}/members/{memberId}/ai-note`를 추가했다.
+  기존 `GET /api/notes/books/{bookId}/ai-note`는 토큰 주인 것만 보므로 타인 프로필에 쓸 수 없었다.
+- 응답 형식은 기존과 동일(`exists`, `aiNoteId`, `content`, `tags`, `edited`).
+  없는 `memberId`는 400, 그 회원이 아직 안 만들었으면 `exists: false`로 200.
+- **공개 범위 결정**: 팔로우 여부를 보지 않는다. 로그인만 했으면 누구나 남의 AI 독후감을 읽을 수 있다.
+  비공개 기능이 필요해지면 `AINote`에 공개 여부 필드를 추가해야 한다.
