@@ -1260,3 +1260,49 @@ if (status === "FULL") return "모집완료";
 - 조치: `@Primary`를 제거했다. 이제 이름으로만 고르고, 두 빈 이름 어느 쪽과도 맞지 않는 `RestTemplate` 필드는 기동 시점에 실패한다
   (조용히 엉뚱한 빈을 받는 것보다 낫다). 현재 주입 지점은 알라딘 1곳(`restTemplate`)과 AI 3곳(`aiRestTemplate`)뿐이다.
 - 미검증: 배포 후 오래 걸리는 책("생각의 도약")에서 10초를 넘겨도 성공하는지. 120초를 넘기면 그때는 AI 서버 쪽 지연을 봐야 한다.
+
+---
+
+# 2026-09-15 채팅 누락 메시지 (알고 있는 한계)
+
+## 27. 채팅방에 있는 채로 연결이 끊겼다 붙으면, 끊긴 동안의 메시지가 새로고침 전까지 안 보인다 (2026-09-15 확인 · 프론트 개선 과제, 보류)
+
+- 위치(프론트): 부모 저장소 `yeonjaeae/READLY_SM_FinalProject`의 `develop` 브랜치(`96433e19`, 2026-09-12 기준)
+  `src/pages/MeetingRoom.js`, `src/api/chatSocket.js`
+- 배경: 채팅은 **저장**(Redis, 접속 여부와 무관하게 전부 저장)과 **배달**(STOMP, 그 순간 구독 중인 연결에만 전송)이 따로 움직인다.
+  STOMP는 구독 이후 메시지만 보내므로, 놓친 메시지는 `GET /api/book-clubs/{clubId}/chats`로 다시 받아 합쳐야 한다. 백엔드는 이미 준비돼 있다.
+- 지금 되는 것: `MeetingRoom.js`가 화면에 들어올 때마다 `getChatHistory`를 부르므로, **페이지를 나갔다 다시 입장 / 새로고침 /
+  브라우저 재시작 / 재로그인** 후에는 이전 메시지와 없는 동안 올라온 메시지가 모두 보인다.
+- 안 되는 것:
+  1. **재연결 시 이력 재조회 없음.** `chatSocket.js`는 `reconnectDelay: 3000`으로 자동 재연결·재구독하지만, 이력은 입장 시 한 번만 부른다.
+     네트워크 순단, 폰 화면 꺼짐·앱 전환, **서버 배포(모든 연결이 끊긴다)** 때 끊긴 동안의 메시지가 빠진 채로 대화가 이어진다.
+     사용자는 끊긴 줄 모르므로 누락을 알아챌 방법이 없다.
+  2. **입장 순간 경쟁 상태.** 이력 조회 `useEffect`와 소켓 연결 `useEffect`가 동시에 따로 시작된다. 이력이 먼저 오고 구독이 늦으면
+     그 사이(1초 안팎) 메시지가 빠지고, 실시간 메시지가 먼저 오면 늦게 온 이력의 `setMessages(...)`가 목록을 통째로 덮어써 사라진다.
+     실시간 메시지는 `messageId` 확인 없이 뒤에 붙이기만 해서 중복 표시될 수도 있다.
+  3. (참고) `connectHeaders`의 토큰을 클라이언트 생성 시 한 번만 넣어, 토큰 만료 후 끊기면 만료 토큰으로 3초마다 재연결을 반복하며
+     조용히 실패한다. 리프레시 토큰이 없어 이 경우는 재로그인이 필요하다(액세스 토큰은 같은 날 1시간 → 2시간으로 늘렸다).
+- 결정: **당장은 이대로 둔다.** 30분짜리 모임이라 PC 웹 기준으로는 드물다. 대신 운영 수칙 두 가지를 지킨다.
+  - **모임 진행 중에는 `backend`에 push(배포)하지 않는다.**
+  - 테스트·시연 중 메시지가 이상하면 새로고침한다.
+  폰 사용자가 늘거나 시연을 앞두면 그 전에 아래를 반영한다. 리프레시 토큰은 도입하지 않기로 했다.
+- 프론트 수정 방향(백엔드 변경 없음): **`onConnect`마다(구독 직후) 이력을 다시 불러와 `messageId`로 합치고 `createdAt`으로 정렬**한다.
+  `createChatClient`는 이미 subscribe 후 `onConnect`를 부르므로 순서가 자연스럽게 맞고, 입장·재연결·배포 복구가 한 번에 해결된다.
+
+  ```js
+  const mergeMessages = (prev, incoming) => {
+    const map = new Map(prev.map((m) => [m.id, m]));
+    incoming.forEach((m) => map.set(m.id, m));
+    return [...map.values()].sort((a, b) => a.createdAt.localeCompare(b.createdAt));
+  };
+  // mapServerMessage에 createdAt: m.createdAt 추가
+  // onMessage: (body) => setMessages((prev) => mergeMessages(prev, [mapServerMessage(body)]))
+  // onConnect: async () => {
+  //   const data = await getChatHistory(roomId);
+  //   setMessages((prev) => mergeMessages(prev, (data || []).map(mapServerMessage)));
+  // }
+  // chatSocket.js: beforeConnect: () => { client.connectHeaders = { Authorization: `Bearer ${getToken()}` }; }
+  ```
+
+- 백엔드만으로 못 고치는 이유: 서버는 어느 연결이 언제부터 끊겼고 무엇을 놓쳤는지 모르고, 화면 목록은 프론트 상태다.
+  "구독 시 서버가 이력을 사용자에게 밀어주기"도 가능하지만 프론트가 그걸 받아 합치는 코드가 똑같이 필요해 이점이 없다.
