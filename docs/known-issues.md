@@ -1046,9 +1046,9 @@ TTL 7일을 기다릴 수 없으므로 Redis에서 해당 키만 `EXPIRE 1`로 �
 - 조치: **AI 전용 빈 `aiRestTemplate`을 분리**하고 기본값을 **연결 10초 / 응답 대기 120초**로 잡았다.
   `ai.connect-timeout-seconds` / `ai.read-timeout-seconds`(환경변수 `AI_CONNECT_TIMEOUT_SECONDS`,
   `AI_READ_TIMEOUT_SECONDS`)로 조정할 수 있다.
-- 알라딘 등 일반 호출은 기존 빈(`@Primary`, 3초/10초)을 그대로 쓴다.
+- 알라딘 등 일반 호출은 기존 빈(3초/10초)을 그대로 쓴다. (당시엔 `@Primary`였고, 그 때문에 이 분리가 동작하지 않았다 → 26번)
   **한 빈의 타임아웃만 늘리지 않은 이유**는, 그러면 알라딘 검색이 죽었을 때도 사용자가 2분을 기다리기 때문이다.
-- 주입은 **필드 이름**으로 구분한다(`aiRestTemplate`이라고 쓰면 느린 빈, 그 외에는 `@Primary` 빈).
+- 주입은 **필드 이름**으로 구분한다(`aiRestTemplate`이라고 쓰면 느린 빈). ※ `@Primary`가 붙어 있는 동안은 이름보다 `@Primary`가 우선해서 실제로는 전부 10초 빈이 주입됐다(26번).
   AI를 호출하는 세 곳(`ChatService`, `BookNoteService`, `ChatConsumer`)을 전부 바꿨다.
 - 검증: AI 진행자 호출 200(5초), AI 독후감 생성 200(4초), 알라딘 검색 20건 정상.
   이번 호출들은 원래 10초 안에 끝나는 것들이라 **늘어난 한도 자체가 실제로 쓰이는 상황(60초 이상 걸리는 응답)은
@@ -1239,3 +1239,24 @@ if (status === "FULL") return "모집완료";
 - 교훈: 우리 쪽 4xx 로그와 상대 서버 로그가 어긋나면 **요청 원문**을 먼저 의심한다. `"Invalid HTTP request received."`는
   FastAPI가 아니라 uvicorn이 HTTP 파싱 단계에서 내는 문구다.
 - 미검증: 배포 후 실제 버튼에서 200이 오는지. `/meeting/assist`도 같은 원인으로 실패하고 있었을 가능성이 높으니 함께 확인한다.
+
+## 26. AI 독후감 생성이 정확히 10초 만에 타임아웃된다 (2026-09-15 원인 확인·수정, 배포 후 검증 필요)
+
+- 위치: `global/config/RestTemplateConfig`
+- 증상: 25번을 고친 뒤 짧은 독후감은 성공하지만, 오래 걸리는 책은 매번 실패한다. 로그의 시작(`AI API KEY ...`)과
+  에러 사이가 두 번 모두 **정확히 10.0초**다. AI 전용 한도(120초)가 아니라 공용 빈 한도(10초)다.
+
+  ```
+  11:08:25.819 AI API KEY 길이=18 ...
+  11:08:35.826 AI 서버 호출 실패 ... Caused by: java.net.http.HttpTimeoutException: Request cancelled
+  ```
+
+- 원인: 공용 `restTemplate`에 `@Primary`가 붙어 있었다. 스프링은 같은 타입 빈이 여럿이면 **`@Primary`를 필드(생성자 파라미터)
+  이름보다 먼저** 본다. 그래서 `private final RestTemplate aiRestTemplate;`로 선언한 세 곳(`BookNoteService`, `ChatService`,
+  `ChatConsumer`) 모두 10초짜리 빈을 받았다. 8843d334에서 빈을 나눈 뒤로 **한 번도 120초가 적용된 적이 없다.**
+  그동안은 25번의 400이 16ms 만에 먼저 터져서 드러나지 않았다.
+- 확인: 로컬에서 `RestTemplateConfig`만 올린 컨텍스트에 `aiRestTemplate`/`restTemplate` 필드를 가진 빈을 넣어 주입 대상을 비교했다.
+  `@Primary`가 있을 때는 둘 다 `restTemplate`, 없앤 뒤에는 각자 이름대로 주입됐다.
+- 조치: `@Primary`를 제거했다. 이제 이름으로만 고르고, 두 빈 이름 어느 쪽과도 맞지 않는 `RestTemplate` 필드는 기동 시점에 실패한다
+  (조용히 엉뚱한 빈을 받는 것보다 낫다). 현재 주입 지점은 알라딘 1곳(`restTemplate`)과 AI 3곳(`aiRestTemplate`)뿐이다.
+- 미검증: 배포 후 오래 걸리는 책("생각의 도약")에서 10초를 넘겨도 성공하는지. 120초를 넘기면 그때는 AI 서버 쪽 지연을 봐야 한다.
