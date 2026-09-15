@@ -6,6 +6,9 @@ on:
 
 jobs:
   build-and-deploy:
+    # 이 파일은 PR로 부모 저장소(yeonjaeae)에도 머지된다. 거기엔 EC2 비밀값이 없어 배포가 실패하므로
+    # 포크(leekj9633)에서만 실행한다. 부모에서는 skipped로 끝나 파일을 지울 필요가 없다.
+    if: github.repository == 'leekj9633/READLY_SM_FinalProject'
     runs-on: ubuntu-latest
 
     steps:
