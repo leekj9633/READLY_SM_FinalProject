@@ -19,7 +19,7 @@ public class RestTemplateConfig {
     // AI 호출은 응답이 훨씬 느려서 이 값으로는 부족하다. 아래 aiRestTemplate을 따로 쓴다.
     //
     // @Primary를 붙이면 안 된다. 스프링은 같은 타입 빈이 여럿일 때 필드(생성자 파라미터) 이름보다 @Primary를 먼저 보므로,
-    // aiRestTemplate이라고 이름 붙인 필드까지 이 10초짜리 빈을 받는다. 실제로 그렇게 AI 호출이 10초에 끊겼다(known-issues #26).
+    // aiRestTemplate이라고 이름 붙인 필드까지 이 10초짜리 빈을 받는다. 실제로 그렇게 AI 호출이 10초에 끊겼다(known-issues #28).
     // @Primary가 없으면 이름으로 고르고, 어느 빈 이름과도 맞지 않는 필드는 기동 시점에 바로 실패한다.
     @Bean
     public RestTemplate restTemplate() {

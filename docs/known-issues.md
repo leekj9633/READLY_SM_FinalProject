@@ -14,6 +14,24 @@
 같은 날 전 기능을 실제 서버로 검증하다 21번(AI 독후감 생성이 필드명 불일치로 항상 503)을 찾아 고쳤다.
 검증 결과 표는 문서 맨 아래 "2026-08-26 전 기능 실동작 검증"에 있다.
 
+2026-09-15 번호 정리: 8/30과 9/13에 22·23번을 각각 새로 붙여 번호가 겹쳤다. 9/13 묶음과 9/15 묶음을 한 칸씩 밀어
+**22~29번이 중복 없이 이어지게** 바꿨다. 그 이전 커밋 메시지나 PR에서 말하는 번호는 옛 번호이니 아래 표로 대조한다.
+
+| 번호 | 내용 | 상태 (2026-09-15) | 옛 번호 |
+| --- | --- | --- | --- |
+| 20 | AI 서버에 `/api/ai/chat` 없음 → 채팅마다 404 | 보류 (호출 주석 처리) | 20 |
+| 21 | AI 독후감 요청 필드명 `book_title` 불일치 | 해결 | 21 |
+| 22 | 배포 서버 WebSocket 핸드셰이크 400 (nginx `Upgrade` 헤더) | 서버 설정 필요 · 반영 여부 기록 없음 | 22 (8/30) |
+| 23 | 정원 찬 모임이 계속 "모집중" → `FULL` 추가 | 해결 | 23 (8/30) |
+| 24 | 감정 태그는 `/api/analysis/emotion-tags` 별도 호출 | 구현 · 요청/응답 형식 미검증 | 22 (9/13) |
+| 25 | AI 요청에 `X-AI-API-KEY` 헤더 누락 | 해결 · 배포 검증 | 23 (9/13) |
+| 26 | 남의 AI 독후감 조회 엔드포인트 | 추가 | 24 (9/13) |
+| 27 | JDK HttpClient의 `Upgrade: h2c` 때문에 AI 호출 400 | 해결 · 배포 검증 | 25 (9/15) |
+| 28 | `@Primary` 때문에 AI 타임아웃이 120초가 아닌 10초 | 수정 · 긴 요청 검증 필요 | 26 (9/15) |
+| 29 | 채팅방에 머문 채 재연결 시 끊긴 동안 메시지 누락 | 보류 (프론트 개선 과제) | 27 (9/15) |
+
+8/26의 요구사항 A(채팅 보관)·B(채팅 활성화 시간)·C(AI 타임아웃)와 백필 실행 기록은 번호 없는 절로 그대로 뒀다.
+
 ## 1. 브라우저에서 WebSocket 연결 불가 (2026-08-16 해결)
 
 - 위치: `global/config/SecurityConfig.java`, `global/config/StompAuthChannelInterceptor.java`
@@ -1046,9 +1064,9 @@ TTL 7일을 기다릴 수 없으므로 Redis에서 해당 키만 `EXPIRE 1`로 �
 - 조치: **AI 전용 빈 `aiRestTemplate`을 분리**하고 기본값을 **연결 10초 / 응답 대기 120초**로 잡았다.
   `ai.connect-timeout-seconds` / `ai.read-timeout-seconds`(환경변수 `AI_CONNECT_TIMEOUT_SECONDS`,
   `AI_READ_TIMEOUT_SECONDS`)로 조정할 수 있다.
-- 알라딘 등 일반 호출은 기존 빈(3초/10초)을 그대로 쓴다. (당시엔 `@Primary`였고, 그 때문에 이 분리가 동작하지 않았다 → 26번)
+- 알라딘 등 일반 호출은 기존 빈(3초/10초)을 그대로 쓴다. (당시엔 `@Primary`였고, 그 때문에 이 분리가 동작하지 않았다 → 28번)
   **한 빈의 타임아웃만 늘리지 않은 이유**는, 그러면 알라딘 검색이 죽었을 때도 사용자가 2분을 기다리기 때문이다.
-- 주입은 **필드 이름**으로 구분한다(`aiRestTemplate`이라고 쓰면 느린 빈). ※ `@Primary`가 붙어 있는 동안은 이름보다 `@Primary`가 우선해서 실제로는 전부 10초 빈이 주입됐다(26번).
+- 주입은 **필드 이름**으로 구분한다(`aiRestTemplate`이라고 쓰면 느린 빈). ※ `@Primary`가 붙어 있는 동안은 이름보다 `@Primary`가 우선해서 실제로는 전부 10초 빈이 주입됐다(28번).
   AI를 호출하는 세 곳(`ChatService`, `BookNoteService`, `ChatConsumer`)을 전부 바꿨다.
 - 검증: AI 진행자 호출 200(5초), AI 독후감 생성 200(4초), 알라딘 검색 20건 정상.
   이번 호출들은 원래 10초 안에 끝나는 것들이라 **늘어난 한도 자체가 실제로 쓰이는 상황(60초 이상 걸리는 응답)은
@@ -1166,7 +1184,7 @@ if (status === "FULL") return "모집완료";
 
 # 2026-09-13 AI 연동 3건 (남 프로필 독후감 / API 키 헤더 / 감정 태그)
 
-## 22. 감정 태그는 `/api/analysis/emotion-tags`를 따로 불러야 한다
+## 24. 감정 태그는 `/api/analysis/emotion-tags`를 따로 불러야 한다 (2026-09-13 구현 · 요청/응답 형식 미검증)
 
 - 위치: `domain/book/service/BookNoteService.generateAiBookNote`
 - 그동안 `ai_note.tags`가 항상 비어 있던 이유(21번 끝부분의 "남은 사실")가 확인됐다.
@@ -1192,7 +1210,7 @@ if (status === "FULL") return "모집완료";
   2. 응답이 `{ "tags": [...] }` 형태인지.
 - 참고: `/api/preference/analyze`(마이페이지 성향 분석)는 **아직 구현하지 않았다.** 요구사항이 나오면 별도 작업이다.
 
-## 23. AI 서버로 나가는 요청에 `X-AI-API-KEY`가 없었다
+## 25. AI 서버로 나가는 요청에 `X-AI-API-KEY`가 없었다 (2026-09-13 해결 · 2026-09-15 배포 검증)
 
 - 위치: `BookNoteService.generateReview`, `ChatService.requestMeetingAssist`, `ChatConsumer.sendToAiAgent`
 - AI 서버가 이 헤더를 필수로 요구하도록 바뀌었는데, 우리는 콜백을 **받을 때만** 이 키를 검사하고
@@ -1200,9 +1218,10 @@ if (status === "FULL") return "모집완료";
 - 진단을 어렵게 만든 지점: `AiServerException`이 잡는 `RestClientException`에는 연결 실패뿐 아니라
   AI 서버가 돌려준 4xx/5xx도 들어온다. 그래서 **401을 받아도 화면에는 "AI 서버에 연결할 수 없습니다"**가 뜬다.
   이 메시지를 네트워크 장애로 단정하면 안 된다. 실제 상태 코드는 `docker logs spring-app`에서 확인한다.
-- 미검증: 배포 환경에서 실제로 200이 오는지. 컴파일만 확인했다.
+- ~~미검증: 배포 환경에서 실제로 200이 오는지.~~ → 2026-09-15 확인. 키는 맞았고, 실패 원인은 27·28번(HTTP/2 업그레이드 헤더, `@Primary`)이었다.
+  27번 수정 후 배포 환경에서 AI 독후감 생성 200을 확인했다.
 
-## 24. 남의 AI 독후감 조회 엔드포인트 추가
+## 26. 남의 AI 독후감 조회 엔드포인트 추가 (2026-09-13 추가)
 
 - 프론트 요청으로 `GET /api/notes/books/{bookId}/members/{memberId}/ai-note`를 추가했다.
   기존 `GET /api/notes/books/{bookId}/ai-note`는 토큰 주인 것만 보므로 타인 프로필에 쓸 수 없었다.
@@ -1215,7 +1234,7 @@ if (status === "FULL") return "모집완료";
 
 # 2026-09-15 AI 호출이 HTTP/2 업그레이드 헤더 때문에 400으로 실패
 
-## 25. AI 서버는 200을 남기는데 우리는 `400 Invalid HTTP request received.`를 받는다 (2026-09-15 원인 확인·수정, 배포 후 검증 필요)
+## 27. AI 서버는 200을 남기는데 우리는 `400 Invalid HTTP request received.`를 받는다 (2026-09-15 해결 · 배포 검증 완료)
 
 - 위치: `global/config/RestTemplateConfig` (영향: `aiRestTemplate`을 쓰는 `BookNoteService.generateReview`·`analyzeEmotionTags`, `ChatService.requestMeetingAssist`)
 - 증상: "AI 독서록 생성" 버튼이 503. `docker logs spring-app`에는 요청 후 **16ms 만에** 아래 에러가 찍힌다.
@@ -1226,7 +1245,7 @@ if (status === "FULL") return "모집완료";
   "http://13.125.223.216:8001/api/review/generate": "Invalid HTTP request received."
   ```
 
-- 23번 미검증 항목(배포 환경에서 200이 오는지)의 답이 이것이었다. 키(`default-readly-key`)·주소·body는 문제가 없었다.
+- 25번 미검증 항목(배포 환경에서 200이 오는지)의 답이 이것이었다. 키(`default-readly-key`)·주소·body는 문제가 없었다.
   EC2에서 같은 body로 `curl`을 보내면 200과 독후감이 정상으로 온다.
 - 원인: Boot 3.5의 `new RestTemplateBuilder()`는 JDK `HttpClient`(`JdkClientHttpRequestFactory`)를 쓰고, 이 클라이언트는
   HTTP/2가 기본이라 `http://` 주소에 `Connection: Upgrade, HTTP2-Settings` / `Upgrade: h2c`를 붙여 보낸다.
@@ -1238,12 +1257,13 @@ if (status === "FULL") return "모집완료";
   표준 HTTP/1.1이라 uvicorn이 처리한다. 알라딘은 https라 h2c 업그레이드 대상이 아니므로 영향이 없다.
 - 교훈: 우리 쪽 4xx 로그와 상대 서버 로그가 어긋나면 **요청 원문**을 먼저 의심한다. `"Invalid HTTP request received."`는
   FastAPI가 아니라 uvicorn이 HTTP 파싱 단계에서 내는 문구다.
-- 미검증: 배포 후 실제 버튼에서 200이 오는지. `/meeting/assist`도 같은 원인으로 실패하고 있었을 가능성이 높으니 함께 확인한다.
+- 검증(2026-09-15 배포): "참을 수 없는 존재의 가벼움"으로 AI 독후감 생성 성공. 다만 10초가 넘는 책은 여전히 실패했고, 그 원인이 28번이다.
+- 남은 확인: `/meeting/assist`(채팅 AI 진행자)도 같은 원인으로 실패하고 있었을 가능성이 높다. 배포 환경에서 한 번 눌러 본다.
 
-## 26. AI 독후감 생성이 정확히 10초 만에 타임아웃된다 (2026-09-15 원인 확인·수정, 배포 후 검증 필요)
+## 28. AI 독후감 생성이 정확히 10초 만에 타임아웃된다 (2026-09-15 수정 · 긴 요청으로 배포 검증 필요)
 
 - 위치: `global/config/RestTemplateConfig`
-- 증상: 25번을 고친 뒤 짧은 독후감은 성공하지만, 오래 걸리는 책은 매번 실패한다. 로그의 시작(`AI API KEY ...`)과
+- 증상: 27번을 고친 뒤 짧은 독후감은 성공하지만, 오래 걸리는 책은 매번 실패한다. 로그의 시작(`AI API KEY ...`)과
   에러 사이가 두 번 모두 **정확히 10.0초**다. AI 전용 한도(120초)가 아니라 공용 빈 한도(10초)다.
 
   ```
@@ -1254,7 +1274,7 @@ if (status === "FULL") return "모집완료";
 - 원인: 공용 `restTemplate`에 `@Primary`가 붙어 있었다. 스프링은 같은 타입 빈이 여럿이면 **`@Primary`를 필드(생성자 파라미터)
   이름보다 먼저** 본다. 그래서 `private final RestTemplate aiRestTemplate;`로 선언한 세 곳(`BookNoteService`, `ChatService`,
   `ChatConsumer`) 모두 10초짜리 빈을 받았다. 8843d334에서 빈을 나눈 뒤로 **한 번도 120초가 적용된 적이 없다.**
-  그동안은 25번의 400이 16ms 만에 먼저 터져서 드러나지 않았다.
+  그동안은 27번의 400이 16ms 만에 먼저 터져서 드러나지 않았다.
 - 확인: 로컬에서 `RestTemplateConfig`만 올린 컨텍스트에 `aiRestTemplate`/`restTemplate` 필드를 가진 빈을 넣어 주입 대상을 비교했다.
   `@Primary`가 있을 때는 둘 다 `restTemplate`, 없앤 뒤에는 각자 이름대로 주입됐다.
 - 조치: `@Primary`를 제거했다. 이제 이름으로만 고르고, 두 빈 이름 어느 쪽과도 맞지 않는 `RestTemplate` 필드는 기동 시점에 실패한다
@@ -1265,7 +1285,7 @@ if (status === "FULL") return "모집완료";
 
 # 2026-09-15 채팅 누락 메시지 (알고 있는 한계)
 
-## 27. 채팅방에 있는 채로 연결이 끊겼다 붙으면, 끊긴 동안의 메시지가 새로고침 전까지 안 보인다 (2026-09-15 확인 · 프론트 개선 과제, 보류)
+## 29. 채팅방에 있는 채로 연결이 끊겼다 붙으면, 끊긴 동안의 메시지가 새로고침 전까지 안 보인다 (2026-09-15 확인 · 프론트 개선 과제, 보류)
 
 - 위치(프론트): 부모 저장소 `yeonjaeae/READLY_SM_FinalProject`의 `develop` 브랜치(`96433e19`, 2026-09-12 기준)
   `src/pages/MeetingRoom.js`, `src/api/chatSocket.js`
