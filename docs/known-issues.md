@@ -1210,3 +1210,32 @@ if (status === "FULL") return "모집완료";
   없는 `memberId`는 400, 그 회원이 아직 안 만들었으면 `exists: false`로 200.
 - **공개 범위 결정**: 팔로우 여부를 보지 않는다. 로그인만 했으면 누구나 남의 AI 독후감을 읽을 수 있다.
   비공개 기능이 필요해지면 `AINote`에 공개 여부 필드를 추가해야 한다.
+
+---
+
+# 2026-09-15 AI 호출이 HTTP/2 업그레이드 헤더 때문에 400으로 실패
+
+## 25. AI 서버는 200을 남기는데 우리는 `400 Invalid HTTP request received.`를 받는다 (2026-09-15 원인 확인·수정, 배포 후 검증 필요)
+
+- 위치: `global/config/RestTemplateConfig` (영향: `aiRestTemplate`을 쓰는 `BookNoteService.generateReview`·`analyzeEmotionTags`, `ChatService.requestMeetingAssist`)
+- 증상: "AI 독서록 생성" 버튼이 503. `docker logs spring-app`에는 요청 후 **16ms 만에** 아래 에러가 찍힌다.
+  그런데 같은 시각 **AI 서버 로그에는 200**이 남는다.
+
+  ```
+  HttpClientErrorException$BadRequest: 400 Bad Request on POST request for
+  "http://13.125.223.216:8001/api/review/generate": "Invalid HTTP request received."
+  ```
+
+- 23번 미검증 항목(배포 환경에서 200이 오는지)의 답이 이것이었다. 키(`default-readly-key`)·주소·body는 문제가 없었다.
+  EC2에서 같은 body로 `curl`을 보내면 200과 독후감이 정상으로 온다.
+- 원인: Boot 3.5의 `new RestTemplateBuilder()`는 JDK `HttpClient`(`JdkClientHttpRequestFactory`)를 쓰고, 이 클라이언트는
+  HTTP/2가 기본이라 `http://` 주소에 `Connection: Upgrade, HTTP2-Settings` / `Upgrade: h2c`를 붙여 보낸다.
+  로컬에서 가짜 소켓 서버로 원문을 찍어 확인했다. uvicorn은 h2c를 지원하지 않아 요청은 처리(→ 200 로그)하면서도
+  뒤에 남은 바이트를 새 요청으로 읽다 실패해 **즉시 400을 같은 연결로 보낸다.** 클라이언트는 먼저 온 400을 응답으로 받고,
+  몇 초 뒤의 200(독후감)은 버려진다. curl은 업그레이드 헤더를 보내지 않아서 성공했다.
+- 조치: `RestTemplateConfig.http11Builder()`에서 `HttpClient.Version.HTTP_1_1`로 고정하고 두 빈 모두 이걸 쓰게 했다.
+  같은 방법으로 원문을 다시 찍어 업그레이드 헤더 3개가 사라진 것을 확인했다. body는 여전히 `Transfer-encoding: chunked`인데
+  표준 HTTP/1.1이라 uvicorn이 처리한다. 알라딘은 https라 h2c 업그레이드 대상이 아니므로 영향이 없다.
+- 교훈: 우리 쪽 4xx 로그와 상대 서버 로그가 어긋나면 **요청 원문**을 먼저 의심한다. `"Invalid HTTP request received."`는
+  FastAPI가 아니라 uvicorn이 HTTP 파싱 단계에서 내는 문구다.
+- 미검증: 배포 후 실제 버튼에서 200이 오는지. `/meeting/assist`도 같은 원인으로 실패하고 있었을 가능성이 높으니 함께 확인한다.
